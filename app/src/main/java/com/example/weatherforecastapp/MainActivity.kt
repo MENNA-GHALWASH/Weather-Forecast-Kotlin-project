@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,7 +53,7 @@ fun MainScreen() {
         colors = listOf(Color(0xFF18213E), Color(0xFF923EA8)),
         startY = 0f,
         endY = Float.POSITIVE_INFINITY
-    )
+    ) // will have to extract you in a color file later, make it theme dark
 
     Box(
         modifier = Modifier
@@ -71,8 +72,9 @@ fun MainScreen() {
             Text(
                 text = "Weather Checker",
                 color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 70.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
@@ -85,7 +87,7 @@ fun MainScreen() {
                     containerColor = Color(0xFFDDB130) // Matching gradient theme
                 )
             ) {
-                Text(text = "Get Started", color = Color.White)
+                Text(text = "Get Started", color = Color.Black , fontSize = 30.sp)
             }
         }
     }
