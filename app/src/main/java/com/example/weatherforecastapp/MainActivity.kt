@@ -24,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +34,8 @@ import androidx.compose.ui.unit.sp
 import com.airbnb.lottie.compose.LottieAnimatable
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.weatherforecastapp.ui.theme.WeatherForecastAppTheme
 
@@ -55,6 +59,11 @@ fun MainScreen() {
         endY = Float.POSITIVE_INFINITY
     ) // will have to extract you in a color file later, make it theme dark
 
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = LottieConstants.IterateForever // Infinite looping
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -67,14 +76,19 @@ fun MainScreen() {
         ) {
             LottieAnimation(
                 modifier = Modifier.size(300.dp),
-                composition = composition
+                composition = composition,
+                progress = {progress}
             )
             Text(
-                text = "Weather Checker",
-                color = Color.White,
+                text = buildAnnotatedString {
+                    append("Weather ")
+                    pushStyle(SpanStyle(color = Color(0xFFDDB130))) // Yellow color for "Checker"
+                    append("Checker")
+                },
                 fontSize = 70.sp,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = Color.White
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
@@ -84,7 +98,7 @@ fun MainScreen() {
                     // Otherwise, navigate to select location
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFDDB130) // Matching gradient theme
+                    containerColor = Color(0xFFDDB130)
                 )
             ) {
                 Text(text = "Get Started", color = Color.Black , fontSize = 30.sp)
