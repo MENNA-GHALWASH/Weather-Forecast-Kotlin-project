@@ -60,7 +60,7 @@ class StartScreenRepo(private val application: Application) {
         )
     }
 
-    fun enableLocPermission(){ //enable location method from tutorial
+    fun enableLocPermission(){
         Toast.makeText(application,"turn on location", Toast.LENGTH_LONG).show()
         val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         application.startActivity(intent)
@@ -72,4 +72,15 @@ class StartScreenRepo(private val application: Application) {
         return locMngr.isProviderEnabled(LocationManager.GPS_PROVIDER) || locMngr.isProviderEnabled(
             LocationManager.NETWORK_PROVIDER)
     }
+
+    fun myfun(){
+        if (!isLocationEnabled()){
+            enableLocPermission()
+        }
+        else{
+            getCurrentLoc()
+        }
+    }
+    //we need a function to check if the location is enabled,the get current location
+    //if not ,then we need to enable it through the settings -> basically the enable location
 }
