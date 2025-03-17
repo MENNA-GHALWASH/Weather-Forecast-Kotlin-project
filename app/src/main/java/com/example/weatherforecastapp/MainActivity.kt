@@ -83,7 +83,7 @@ fun MainScreen() {
                 text = buildAnnotatedString {
                     append("Weather ")
                     pushStyle(SpanStyle(color = Color(0xFFDDB130))) // Yellow color for "Checker"
-                    append("Checker")
+                    append("Finder")
                 },
                 fontSize = 70.sp,
                 fontWeight = FontWeight.Bold,
