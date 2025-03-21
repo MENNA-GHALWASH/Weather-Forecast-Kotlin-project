@@ -13,10 +13,13 @@ sealed class ScreenRoute(){
     object LocationScreen: ScreenRoute()
 
     @Serializable
-    data class WeatherScreen(var loc: Location): ScreenRoute()
+    //data class WeatherScreen(var loc: Location): ScreenRoute()
+    object WeatherScreen: ScreenRoute()//will make the screen infer location on its own
+    //from vm
 
     @Serializable
-    data class NotificationsScreen(var loc:Location? = null):ScreenRoute()
+    //data class NotificationsScreen(var loc: SerializableLocation? = null):ScreenRoute()
+    object NotificationsScreen: ScreenRoute()
 
     @Serializable
     object FavouritesScreen: ScreenRoute()

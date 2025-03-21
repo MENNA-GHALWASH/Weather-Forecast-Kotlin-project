@@ -38,19 +38,21 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.weatherforecastapp.ui.theme.WeatherForecastAppTheme
+import setNavHost
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MainScreen()
+          //  MainScreen()
+            setNavHost()
         }
     }
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(goToLocationOrWeather: (isLocationsEnabled:Boolean) -> Unit = {}) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.rainylottie))
 
     val gradientBrush = Brush.verticalGradient(
@@ -96,6 +98,7 @@ fun MainScreen() {
                     // Navigate to:
                     // WeatherScreen of selected location if available
                     // Otherwise, navigate to select location
+                    goToLocationOrWeather(false)
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFDDB130)
