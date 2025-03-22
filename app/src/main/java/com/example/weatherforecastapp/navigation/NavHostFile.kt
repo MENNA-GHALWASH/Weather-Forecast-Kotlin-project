@@ -6,7 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.weatherforecastapp.MainScreen
-import com.example.weatherforecastapp.selecting_location.get_location_with_map.ui.LocationsUI
+import com.example.weatherforecastapp.selecting_location.get_location_with_map.ui.LocationsActivity
 
 @Composable
 fun setNavHost() {
@@ -32,7 +32,7 @@ fun setNavHost() {
         }
 
         composable<ScreenRoute.LocationScreen> {
-            LocationsUI()
+            LocationsActivity().LocationsUI() //is this legal
         }
 
         composable<ScreenRoute.FavouritesScreen> {

@@ -38,3 +38,6 @@ data class WeatherDescription(
     val description: String,
     val icon: String
 )
+
+////geo-coding api
+data class CityResponse(val name: String, val country: String,val lat: Double, val lon: Double)

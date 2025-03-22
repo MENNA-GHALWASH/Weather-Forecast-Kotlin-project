@@ -4,7 +4,7 @@ import com.example.weatherforecastapp.Data.WeatherResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface OpenWeatherApi {
+interface OneCallAPI {
     @GET("data/3.0/onecall")
     suspend fun getWeather(
         @Query("lat") lat: Double,
