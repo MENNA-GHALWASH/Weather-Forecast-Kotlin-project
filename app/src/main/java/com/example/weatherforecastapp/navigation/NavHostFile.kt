@@ -1,4 +1,5 @@
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.internal.isLiveLiteralsEnabled
 import androidx.compose.runtime.remember
@@ -34,7 +35,7 @@ fun setNavHost() {
 
         composable<ScreenRoute.WeatherScreen> {
             var profile = it.toRoute<ScreenRoute.LocationScreen>()
-            //LocationsUI()
+            //WeatherUI()
         }
 
         composable<ScreenRoute.LocationScreen> {
@@ -42,7 +43,13 @@ fun setNavHost() {
             val viewModel: LocationsViewModel = viewModel(
                 factory = LocationsViewModelFactory(repo)
             )
-            LocationsUI(viewModel)
+
+            LocationsUI(viewModel,
+                goToWeather = {current,hourly,daily ->
+                    navController.navigate(ScreenRoute.WeatherScreen)
+                    Log.i("WEATHER", "goToWeather:currently: $current, hourly: $hourly, daily: $daily")
+                }
+            )
         }
 
         composable<ScreenRoute.FavouritesScreen> {
