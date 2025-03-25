@@ -1,6 +1,9 @@
 
 import android.location.Location
+import com.example.weatherforecastapp.Data.HourlyForecast
+import com.example.weatherforecastapp.Data.WeatherResponse
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 @Serializable
 sealed class ScreenRoute(){
@@ -13,9 +16,10 @@ sealed class ScreenRoute(){
     object LocationScreen: ScreenRoute()
 
     @Serializable
-    //data class WeatherScreen(var loc: Location): ScreenRoute()
-    object WeatherScreen: ScreenRoute()//will make the screen infer location on its own
-    //from vm
+    data class WeatherScreen(val weatherJson: String) : ScreenRoute() {
+        val weather: WeatherResponse
+            get() = Json.decodeFromString(weatherJson)
+    }
 
     @Serializable
     //data class NotificationsScreen(var loc: SerializableLocation? = null):ScreenRoute()
@@ -23,8 +27,6 @@ sealed class ScreenRoute(){
 
     @Serializable
     object FavouritesScreen: ScreenRoute()
-
-
 
 }
 //the user clicks on the start btn

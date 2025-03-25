@@ -81,6 +81,11 @@ dependencies {
     implementation ("com.google.android.gms:play-services-maps:18.1.0")
     // Optional: Utility library for markers, clustering, etc.
     implementation ("com.google.maps.android:maps-compose-utils:4.3.0")
+//json serializer
+    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+    //coil for image loading
+    implementation ("io.coil-kt:coil-compose:1.3.2") // or the latest version
 
 
 }

@@ -1,6 +1,8 @@
 package com.example.weatherforecastapp.Data
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class WeatherResponse(
     val lat: Double,
     val lon: Double,
@@ -9,6 +11,7 @@ data class WeatherResponse(
     val daily: List<DailyForecast>
 )
 
+@Serializable
 data class HourlyForecast(
     val dt: Long,
     val temp: Double,
@@ -18,6 +21,7 @@ data class HourlyForecast(
     val weather: List<WeatherDescription>
 )
 
+@Serializable
 data class DailyForecast(
     val dt: Long,
     val temp: Temperature,
@@ -27,11 +31,13 @@ data class DailyForecast(
     val weather: List<WeatherDescription>
 )
 
+@Serializable
 data class Temperature(
     val day: Double,
     val night: Double
 )
 
+@Serializable
 data class WeatherDescription(
     val id: Int,
     val main: String,

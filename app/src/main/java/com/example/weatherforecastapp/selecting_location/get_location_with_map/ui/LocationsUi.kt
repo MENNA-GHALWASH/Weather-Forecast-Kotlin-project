@@ -49,7 +49,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 
-fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?, HourlyForecast?, DailyForecast?)->Unit = {_,_,_ ->}) {
+fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, HourlyForecast?, DailyForecast?*/)->Unit = {_/*,_,_*/ ->}) {
 
 //code for circular p
 //        CircularProgressIndicator(
@@ -66,8 +66,8 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?, Hou
     val isLoading by viewModel.isLoading.collectAsState()
 
     val currentWeather by viewModel.current_weather.collectAsState()
-    val hourlyWeather by viewModel.hourly_weather.collectAsState()
-    val dailyWeather by viewModel.daily_weather.collectAsState()
+    //val hourlyWeather by viewModel.hourly_weather.collectAsState()
+    //val dailyWeather by viewModel.daily_weather.collectAsState()
 
 
     var defaultLocation by remember { mutableStateOf(LatLng(30.0444, 31.2357)) }
@@ -105,11 +105,12 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?, Hou
             onSearch = {
 
                 viewModel.getCurrentWeather(currentLatLong.latitude,currentLatLong.longitude,apiKey)
-                viewModel.getDailyWeather(currentLatLong.latitude,currentLatLong.longitude,apiKey)
-                viewModel.getHourlyWeather(currentLatLong.latitude,currentLatLong.longitude,apiKey)
+                //viewModel.getDailyWeather(currentLatLong.latitude,currentLatLong.longitude,apiKey)
+                //viewModel.getHourlyWeather(currentLatLong.latitude,currentLatLong.longitude,apiKey)
 
                 Log.i("latlong", "LocationsUI: ${currentLatLong.latitude},${currentLatLong.longitude}")
-                goToWeather(currentWeather,hourlyWeather,dailyWeather)
+                goToWeather(currentWeather/*,hourlyWeather,dailyWeather*/)
+
                 //get the lat and long of the country
                 //send it to the function that does nw call
                 //search and get weather data
