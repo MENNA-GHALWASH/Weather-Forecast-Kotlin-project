@@ -51,13 +51,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 
 fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, HourlyForecast?, DailyForecast?*/)->Unit = {_/*,_,_*/ ->}) {
 
-//code for circular p
-//        CircularProgressIndicator(
-//            modifier = Modifier.width(64.dp),
-//            color = MaterialTheme.colorScheme.secondary,
-//            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-//        )
-
     val apiKey = stringResource(R.string.geocoding_api)
     var searchQuery by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
@@ -66,8 +59,6 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
     val isLoading by viewModel.isLoading.collectAsState()
 
     val currentWeather by viewModel.current_weather.collectAsState()
-    //val hourlyWeather by viewModel.hourly_weather.collectAsState()
-    //val dailyWeather by viewModel.daily_weather.collectAsState()
 
 
     var defaultLocation by remember { mutableStateOf(LatLng(30.0444, 31.2357)) }
@@ -87,8 +78,21 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
     LaunchedEffect(defaultLocation) {
         cameraPositionState.animate(
             CameraUpdateFactory.newLatLngZoom(defaultLocation, 10f),
-            durationMs = 1000 // Animation duration
+            durationMs = 1000
         )
+    }
+
+    LaunchedEffect(currentLatLong) {
+        if (currentLatLong.latitude != 0.0 && currentLatLong.longitude != 0.0) {
+            Log.d("WeatherFlow", "Fetching weather for ${currentLatLong.latitude},${currentLatLong.longitude}")
+            viewModel.getCurrentWeather(
+                currentLatLong.latitude,
+                currentLatLong.longitude,
+                apiKey
+            ).also {
+                Log.d("WeatherFlow", "Weather API call initiated")
+            }
+        }
     }
 
 
@@ -103,19 +107,20 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
                 searchQuery = query
             },
             onSearch = {
+                if (currentLatLong.latitude != 0.0 && currentLatLong.longitude != 0.0) {
+                    viewModel.getCurrentWeather(
+                        currentLatLong.latitude,
+                        currentLatLong.longitude,
+                        apiKey
+                    )
 
-                viewModel.getCurrentWeather(currentLatLong.latitude,currentLatLong.longitude,apiKey)
-                //viewModel.getDailyWeather(currentLatLong.latitude,currentLatLong.longitude,apiKey)
-                //viewModel.getHourlyWeather(currentLatLong.latitude,currentLatLong.longitude,apiKey)
-
-                Log.i("latlong", "LocationsUI: ${currentLatLong.latitude},${currentLatLong.longitude}")
-                goToWeather(currentWeather/*,hourlyWeather,dailyWeather*/)
-
-                //get the lat and long of the country
-                //send it to the function that does nw call
-                //search and get weather data
-                //navigate to the next screen
-
+                    if (currentWeather != null) {
+                        Log.i("Navigation", "Navigating with weather data")
+                        goToWeather(currentWeather)
+                    } else {
+                        Log.e("Navigation", "Weather data is null")
+                    }
+                }
                 active = false
             },
             active = active,
@@ -140,7 +145,6 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
                 }
             }
         ) {
-            // Display search results
             if (searchQuery.isNotEmpty()) {
                 if (isLoading) {
                     CircularProgressIndicator(

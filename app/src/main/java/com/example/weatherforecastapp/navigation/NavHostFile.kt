@@ -17,6 +17,7 @@ import com.example.weatherforecastapp.selecting_location.get_location_with_map.u
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.ui.LocationsUI
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModel
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModelFactory
+import com.google.gson.Gson
 import kotlinx.serialization.json.Json
 
 //@Composable
@@ -94,7 +95,6 @@ fun setNavHost() {
             )
         }
 
-        // Type-safe WeatherScreen definition
         composable<ScreenRoute.WeatherScreen> { backStackEntry ->
             val weatherScreen = backStackEntry.toRoute<ScreenRoute.WeatherScreen>()
             WeatherUI(weatherScreen.weather)
@@ -105,16 +105,21 @@ fun setNavHost() {
             val viewModel: LocationsViewModel = viewModel(
                 factory = LocationsViewModelFactory(repo)
             )
-
             LocationsUI(
                 viewModel = viewModel,
                 goToWeather = { current ->
-                    navController.navigate(ScreenRoute.WeatherScreen(Json.encodeToString(current)))
+                    val gson = Gson()
+                    navController.navigate(ScreenRoute.WeatherScreen(gson.toJson(current)))
                 }
             )
         }
 
-        composable<ScreenRoute.FavouritesScreen> { /* ... */ }
-        composable<ScreenRoute.NotificationsScreen> { /* ... */ }
+        composable<ScreenRoute.FavouritesScreen> {
+
+        }
+
+        composable<ScreenRoute.NotificationsScreen> {
+
+        }
     }
 }

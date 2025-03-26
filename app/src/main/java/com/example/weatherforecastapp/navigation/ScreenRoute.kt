@@ -2,6 +2,7 @@
 import android.location.Location
 import com.example.weatherforecastapp.Data.HourlyForecast
 import com.example.weatherforecastapp.Data.WeatherResponse
+import com.google.gson.Gson
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -18,8 +19,9 @@ sealed class ScreenRoute(){
     @Serializable
     data class WeatherScreen(val weatherJson: String) : ScreenRoute() {
         val weather: WeatherResponse
-            get() = Json.decodeFromString(weatherJson)
+            get() = Gson().fromJson(weatherJson, WeatherResponse::class.java)
     }
+
 
     @Serializable
     //data class NotificationsScreen(var loc: SerializableLocation? = null):ScreenRoute()
