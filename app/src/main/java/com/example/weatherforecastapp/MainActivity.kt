@@ -1,5 +1,7 @@
 package com.example.weatherforecastapp
 
+import android.app.Application
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -31,28 +34,66 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import com.airbnb.lottie.compose.LottieAnimatable
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.example.weatherforecastapp.Data.WeatherResponse
+import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModel
+import com.example.weatherforecastapp.start_screen.model.StartScreenRepo
+import com.example.weatherforecastapp.start_screen.viewmodel.StartScreeViewModel
+import com.example.weatherforecastapp.start_screen.viewmodel.StartScreenViewModelFactory
 import com.example.weatherforecastapp.ui.theme.WeatherForecastAppTheme
 import setNavHost
 
 class MainActivity : ComponentActivity() {
+
+    val REQUEST_LOCATION_CODE = 1000
+
+//    val repo = StartScreenRepo()
+//    val factory = StartScreenViewModelFactory(repo)
+//    val viewmodel = ViewModelProvider(this,factory)[StartScreeViewModel::class.java]
+
+    val repo = StartScreenRepo()
+    val viewmodel = StartScreeViewModel(repo)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
           //  MainScreen()
-            setNavHost()
+            setNavHost(this.application)
         }
     }
+
+    override fun onStart(){
+        super.onStart()
+        viewmodel.getLocationAndPermission(this.application)
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+        deviceId: Int
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId)
+        if (requestCode == REQUEST_LOCATION_CODE){
+            if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
+                viewmodel.getcurrentLocVM(this.application)
+            }
+        }
+    }
+
 }
 
 @Composable
-fun MainScreen(goToLocationOrWeather: (isLocationsEnabled:Boolean) -> Unit = {}) {
+fun MainScreen(goToLocationOrWeather: (isLocationsEnabled:Boolean,weatherResp:WeatherResponse?) -> Unit ,viewModel:StartScreeViewModel,application:Application, locVM:LocationsViewModel) {
+
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.rainylottie))
 
     val gradientBrush = Brush.verticalGradient(
@@ -65,6 +106,9 @@ fun MainScreen(goToLocationOrWeather: (isLocationsEnabled:Boolean) -> Unit = {})
         composition,
         iterations = LottieConstants.IterateForever // Infinite looping
     )
+
+    val apikey = stringResource(R.string.geocoding_api)
+
 
     Box(
         modifier = Modifier
@@ -95,10 +139,16 @@ fun MainScreen(goToLocationOrWeather: (isLocationsEnabled:Boolean) -> Unit = {})
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
+                    viewModel.getLocationAndPermission(application)
+                    var flag = viewModel.isPermissionEnabled(application)
+                    var loc = viewModel.getcurrentLoc().value
+                    var resp = locVM.getCurrentWeather(loc.latitude,loc.longitude,apikey )
+
                     // Navigate to:
                     // WeatherScreen of selected location if available
                     // Otherwise, navigate to select location
-                    goToLocationOrWeather(false)
+                    //i am really really not sure of this: locVM.current_weather.value
+                    goToLocationOrWeather(flag , locVM.current_weather.value) //was false for testing
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFDDB130)
@@ -109,6 +159,4 @@ fun MainScreen(goToLocationOrWeather: (isLocationsEnabled:Boolean) -> Unit = {})
         }
     }
 }
-
-//18213E
-//923EA8
+//                Text(text = "Get Started", color = Color.Black , fontSize = 30.sp)

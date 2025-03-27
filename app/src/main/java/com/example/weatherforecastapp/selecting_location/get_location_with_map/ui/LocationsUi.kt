@@ -44,6 +44,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -117,6 +119,7 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
                     if (currentWeather != null) {
                         Log.i("Navigation", "Navigating with weather data")
                         goToWeather(currentWeather)
+                        //need to pass it my string
                     } else {
                         Log.e("Navigation", "Weather data is null")
                     }
@@ -155,35 +158,39 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
                 } else {
                     LazyColumn {
                         items(searchResults) { result ->
-                            var resAr = result.split(",")
+                            if (result!=null){
+                                var resAr = result.split(",")
 
-                            var lat = resAr[2].toDouble()
-                            var lon = resAr[3].toDouble()
+                                var lat = resAr[2].toDouble()
+                                var lon = resAr[3].toDouble()
 
-                            var res = resAr[0]+" , "+ resAr[1]
-                            Text(
-                                text = res,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
+                                var res = resAr[0]+" , "+ resAr[1]
 
-                                        //pass lat and lon to a method that changes camera position
-                                        defaultLocation = LatLng(lat, lon)
-                                        latLong = LatLng(lat, lon)
-                                        searchQuery = res
-                                        active = false
+                                Text(
+                                    text = res,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
 
-                                        //in here we get the item -> which is the city name,
-                                        //then we pass it to a method which will:
-                                        //1: get its latlong
-                                        //2: call the onecallweather api
-                                        //3: get the weather data
-                                        //4: change the map's camera position
-                                        //5: when we click on search, we will get navigated to the next screen
-                                        //6: with the data already received
-                                    }
-                                    .padding(16.dp)
-                            )
+                                            //pass lat and lon to a method that changes camera position
+                                            defaultLocation = LatLng(lat, lon)
+                                            latLong = LatLng(lat, lon)
+                                            searchQuery = res
+                                            active = false
+
+                                            //in here we get the item -> which is the city name,
+                                            //then we pass it to a method which will:
+                                            //1: get its latlong
+                                            //2: call the onecallweather api
+                                            //3: get the weather data
+                                            //4: change the map's camera position
+                                            //5: when we click on search, we will get navigated to the next screen
+                                            //6: with the data already received
+                                        }
+                                        .padding(16.dp)
+                                )
+                            }
+
                         }
                     }
                 }
@@ -195,7 +202,18 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f),
-            cameraPositionState = cameraPositionState
-        )
+            cameraPositionState = cameraPositionState,
+            onMapClick = { loc ->
+                latLong = loc // Update latLong when user taps on the map
+            }
+        ) {
+            Marker(
+                state = MarkerState(position = latLong),
+                title = "Selected Location",
+                snippet = "Lat: ${latLong.latitude}, Lng: ${latLong.longitude}"
+            )
+        }
+
+
     }
 }

@@ -8,6 +8,9 @@ import com.example.weatherforecastapp.Data.WeatherResponse
 
 class LocationsRepo {
 
+    val units = UNITS.METRIC
+
+
     suspend fun fetchCities(place: String, apikey:String): List<String> {
         try {
             val geoCodingAPI = RetrofitClient.geo_coding_api
@@ -30,12 +33,20 @@ class LocationsRepo {
         }
     }
 
-
-
     suspend fun getWeatherbyHour(lat:Double, lon:Double, apikey:String): HourlyForecast? { //should return something
         try {
             val weatherAPI = RetrofitClient.one_call_api
-            return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey)
+
+
+            if (units==UNITS.STANDARD){
+                return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey,"standard")
+            }
+            else if (units==UNITS.IMPERIAL){
+                return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey,"imperial")
+            }
+            else {
+                return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey)
+            }
 
         } catch (e:Exception){
             Log.e("Weather", "getWeatherbyHour: ${e.message}", )
@@ -53,4 +64,21 @@ class LocationsRepo {
             return null
         }
     }
+
+    fun getUnit():String{
+        when(units){
+            UNITS.STANDARD ->  return "K"
+            UNITS.METRIC -> return "C"
+            UNITS.IMPERIAL -> return "F"
+        }
+    }
+
+
+}
+
+
+enum class UNITS{
+    STANDARD,
+    METRIC,
+    IMPERIAL
 }

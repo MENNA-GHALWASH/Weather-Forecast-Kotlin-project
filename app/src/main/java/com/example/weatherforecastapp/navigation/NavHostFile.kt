@@ -1,8 +1,10 @@
 
+import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.internal.isLiveLiteralsEnabled
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -17,6 +19,9 @@ import com.example.weatherforecastapp.selecting_location.get_location_with_map.u
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.ui.LocationsUI
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModel
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModelFactory
+import com.example.weatherforecastapp.start_screen.model.StartScreenRepo
+import com.example.weatherforecastapp.start_screen.viewmodel.StartScreeViewModel
+import com.example.weatherforecastapp.start_screen.viewmodel.StartScreenViewModelFactory
 import com.google.gson.Gson
 import kotlinx.serialization.json.Json
 
@@ -81,17 +86,38 @@ import kotlinx.serialization.json.Json
 //}
 
 @Composable
-fun setNavHost() {
+fun setNavHost(application: Application) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
         startDestination = ScreenRoute.StartScreen
     ) {
         composable<ScreenRoute.StartScreen> {
+            val repo = remember { StartScreenRepo() }
+            val viewModel: StartScreeViewModel = viewModel(
+                factory = StartScreenViewModelFactory(repo)
+            )
+
+            val locrepo = remember { LocationsRepo() }
+            val locviewModel: LocationsViewModel = viewModel(
+                factory = LocationsViewModelFactory(locrepo)
+            )
+
             MainScreen(
-                goToLocationOrWeather = { isLocationsEnabled ->
-                    navController.navigate(ScreenRoute.LocationScreen)
-                }
+                goToLocationOrWeather = { isLocationsEnabled,weatherResp ->
+                    if (isLocationsEnabled){
+                        if (weatherResp==null){
+                            Log.e("weather", "start to weatherscreen: response is $weatherResp", )
+                        }
+                       else{
+                            navController.navigate(ScreenRoute.WeatherScreen(Gson().toJson(weatherResp)))
+                            Log.i("weather", "start to weatherscreen: response is $weatherResp", )
+
+                        }
+                    }
+                    else
+                        navController.navigate(ScreenRoute.LocationScreen)
+                },viewModel,application,locviewModel
             )
         }
 

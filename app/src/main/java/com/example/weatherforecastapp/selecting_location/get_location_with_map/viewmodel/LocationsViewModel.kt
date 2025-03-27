@@ -11,6 +11,7 @@ import com.example.weatherforecastapp.Data.DailyForecast
 import com.example.weatherforecastapp.Data.HourlyForecast
 import com.example.weatherforecastapp.Data.WeatherResponse
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.model.LocationsRepo
+import com.example.weatherforecastapp.selecting_location.get_location_with_map.model.UNITS
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -91,6 +92,14 @@ class LocationsViewModel(private val repo: LocationsRepo) : ViewModel() {
             //you may add finally
         }
     }
+
+    fun setUnit(unit:UNITS){
+        repo.units == unit
+    }
+
+    fun getUnit():String{
+        return repo.getUnit()
+    }
 }
 
 
@@ -103,7 +112,7 @@ class LocationsViewModelFactory(
     private val repo: LocationsRepo
 ) : ViewModelProvider.Factory {
 
-    @Suppress("UNCHECKED_CAST")
+   // @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(
         modelClass: Class<T>,
         extras: CreationExtras
