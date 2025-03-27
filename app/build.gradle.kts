@@ -83,9 +83,10 @@ dependencies {
     implementation ("com.google.maps.android:maps-compose-utils:4.3.0")
 //json serializer
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-
     //coil for image loading
     implementation ("io.coil-kt:coil-compose:1.3.2") // or the latest version
-
+    //room
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
 
 }

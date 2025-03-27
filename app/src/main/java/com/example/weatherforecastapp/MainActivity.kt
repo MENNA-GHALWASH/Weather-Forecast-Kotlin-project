@@ -53,10 +53,6 @@ class MainActivity : ComponentActivity() {
 
     val REQUEST_LOCATION_CODE = 1000
 
-//    val repo = StartScreenRepo()
-//    val factory = StartScreenViewModelFactory(repo)
-//    val viewmodel = ViewModelProvider(this,factory)[StartScreeViewModel::class.java]
-
     val repo = StartScreenRepo()
     val viewmodel = StartScreeViewModel(repo)
 

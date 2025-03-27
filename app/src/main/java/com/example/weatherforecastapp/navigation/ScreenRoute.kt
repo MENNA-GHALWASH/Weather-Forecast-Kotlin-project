@@ -1,5 +1,12 @@
 
 import android.location.Location
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.weatherforecastapp.Data.HourlyForecast
 import com.example.weatherforecastapp.Data.WeatherResponse
 import com.google.gson.Gson
@@ -9,19 +16,22 @@ import kotlinx.serialization.json.Json
 @Serializable
 sealed class ScreenRoute(){
 
+    //when we add parameters here we do it to pass data from an old screen to the new one
+    //so if i want to identify from where i came, i can add a parameter called source here
+    //then add the same parameter to the ui , that is this
+    //first the parameter is passedm to the ui method
     @Serializable
     object StartScreen: ScreenRoute()
 
     //so location screen wont take anydata
     @Serializable
-    object LocationScreen: ScreenRoute()
+    data class LocationScreen(val source:String): ScreenRoute()
 
     @Serializable
     data class WeatherScreen(val weatherJson: String) : ScreenRoute() {
         val weather: WeatherResponse
             get() = Gson().fromJson(weatherJson, WeatherResponse::class.java)
     }
-
 
     @Serializable
     //data class NotificationsScreen(var loc: SerializableLocation? = null):ScreenRoute()
@@ -30,7 +40,42 @@ sealed class ScreenRoute(){
     @Serializable
     object FavouritesScreen: ScreenRoute()
 
+    @Serializable
+    object SettingsScreen: ScreenRoute()
+
+
+
+    val icon: ImageVector?
+        get() = when(this) {
+            is WeatherScreen -> Icons.Default.Home
+            is FavouritesScreen -> Icons.Default.Star
+            is NotificationsScreen -> Icons.Default.Notifications
+            is SettingsScreen -> Icons.Default.Settings
+            is LocationScreen -> Icons.Default.LocationOn
+            else -> null
+        }
+
+    val title: String
+        get() = when(this) {
+            is WeatherScreen -> "Weather"
+            is LocationScreen -> "Select Location"
+            is NotificationsScreen -> "Notifications"
+            is FavouritesScreen -> "Favorites"
+            is SettingsScreen -> "Settings"
+            else -> ""
+        }
+
+    companion object {
+        val bottomNavItems = listOf(
+            WeatherScreen(""), // Dummy instance for navigation , will this lead to problems?
+            FavouritesScreen,
+            NotificationsScreen,
+            LocationScreen,
+            SettingsScreen
+        )
+    }
 }
+
 //the user clicks on the start btn
 //if the user already has location stored within the app then it wont ask for it
 //if it's the user's first time, then he will get the notification asking for location services

@@ -51,6 +51,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 
+//go to favourites as optional with default value
 fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, HourlyForecast?, DailyForecast?*/)->Unit = {_/*,_,_*/ ->}) {
 
     val apiKey = stringResource(R.string.geocoding_api)
