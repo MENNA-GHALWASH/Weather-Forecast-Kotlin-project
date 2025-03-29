@@ -7,11 +7,9 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.example.weatherforecastapp.Data.HourlyForecast
 import com.example.weatherforecastapp.Data.WeatherResponse
 import com.google.gson.Gson
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 
 @Serializable
 sealed class ScreenRoute(){
@@ -43,35 +41,29 @@ sealed class ScreenRoute(){
     @Serializable
     object SettingsScreen: ScreenRoute()
 
-
-
-    val icon: ImageVector?
-        get() = when(this) {
-            is WeatherScreen -> Icons.Default.Home
-            is FavouritesScreen -> Icons.Default.Star
-            is NotificationsScreen -> Icons.Default.Notifications
-            is SettingsScreen -> Icons.Default.Settings
-            is LocationScreen -> Icons.Default.LocationOn
-            else -> null
+    override fun toString(): String {
+        return when (this) {
+            is StartScreen -> "StartScreen"
+            is LocationScreen -> "LocationScreen/${source}"
+            is WeatherScreen -> "WeatherScreen/${weatherJson}"
+            is NotificationsScreen -> "NotificationsScreen"
+            is FavouritesScreen -> "FavouritesScreen"
+            is SettingsScreen -> "SettingsScreen"
+            else -> {
+                ""
+            }
         }
+    }
 
-    val title: String
-        get() = when(this) {
-            is WeatherScreen -> "Weather"
-            is LocationScreen -> "Select Location"
-            is NotificationsScreen -> "Notifications"
-            is FavouritesScreen -> "Favorites"
-            is SettingsScreen -> "Settings"
-            else -> ""
-        }
-
+}
+class NavBarHelper(val route: ScreenRoute, val icon: ImageVector?, val title: String) {
     companion object {
-        val bottomNavItems = listOf(
-            WeatherScreen(""), // Dummy instance for navigation , will this lead to problems?
-            FavouritesScreen,
-            NotificationsScreen,
-            LocationScreen,
-            SettingsScreen
+        val Routes = listOf<NavBarHelper>(
+            NavBarHelper(ScreenRoute.LocationScreen(""), Icons.Default.LocationOn, "Location"),
+            NavBarHelper(ScreenRoute.WeatherScreen(""), Icons.Default.Home, "Weather"),
+            NavBarHelper(ScreenRoute.FavouritesScreen, Icons.Default.Star, "Favorites"),
+            NavBarHelper(ScreenRoute.NotificationsScreen, Icons.Default.Notifications, "Notifications"),
+            NavBarHelper(ScreenRoute.SettingsScreen, Icons.Default.Settings, "Settings")
         )
     }
 }

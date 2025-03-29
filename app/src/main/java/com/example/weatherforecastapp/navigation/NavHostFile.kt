@@ -4,11 +4,14 @@ import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.internal.isLiveLiteralsEnabled
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,11 +21,11 @@ import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import com.example.weatherforecastapp.Data.WeatherResponse
 import com.example.weatherforecastapp.MainScreen
-import com.example.weatherforecastapp.favourites.model.FavouritesDAO
-import com.example.weatherforecastapp.favourites.model.FavouritesDAOImpl
-import com.example.weatherforecastapp.favourites.model.FavouritesRepo
-import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
-import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModelFactory
+//import com.example.weatherforecastapp.favourites.model.FavouritesDAO
+//import com.example.weatherforecastapp.favourites.model.FavouritesDAOImpl
+//import com.example.weatherforecastapp.favourites.model.FavouritesRepo
+//import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
+//import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModelFactory
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.model.LocationsRepo
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.ui.LocationsActivity
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.ui.LocationsUI
@@ -37,31 +40,19 @@ import com.google.gson.Gson
 fun setNavHost(application: Application) {
     val navController = rememberNavController()
 
-//    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route?.let { route ->
-//        ScreenRoute.bottomNavItems.find { it::class.simpleName == route }
-//    }
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route?.let { route ->
-        try {
-            // Try to parse the route as one of our ScreenRoute objects
-            when {
-                route.startsWith("WeatherScreen") -> ScreenRoute.WeatherScreen("")
-                route == "LocationScreen" -> ScreenRoute.LocationScreen("Start_screen")
-                route == "FavouritesScreen" -> ScreenRoute.FavouritesScreen
-                route == "NotificationsScreen" -> ScreenRoute.NotificationsScreen
-                route == "SettingsScreen" -> ScreenRoute.SettingsScreen
-                else -> null
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
+    val currentScreenRoute = remember { mutableStateOf<ScreenRoute>(ScreenRoute.StartScreen) }
+
 
     Scaffold(
+
         bottomBar = {
-            if (currentRoute != null ) {
-                BottomNavBar(navController, currentRoute)
+            if (currentScreenRoute.value!=ScreenRoute.StartScreen){
+                BottomNavBar(navController)
             }
         }
+//        bottomBar = {
+//            if (showBottomBar) BottomNavBar(navController)
+//        }
     ) {paddingVals->
         NavHost(
             navController = navController,
@@ -79,6 +70,8 @@ fun setNavHost(application: Application) {
                 val locviewModel: LocationsViewModel = viewModel(
                     factory = LocationsViewModelFactory(locrepo)
                 )
+
+                currentScreenRoute.value = ScreenRoute.StartScreen
 
                 MainScreen(
                     goToLocationOrWeather = { isLocationsEnabled,weatherResp ->
@@ -100,6 +93,9 @@ fun setNavHost(application: Application) {
 
             composable<ScreenRoute.WeatherScreen> { backStackEntry ->
                 val weatherScreen = backStackEntry.toRoute<ScreenRoute.WeatherScreen>()
+
+                currentScreenRoute.value = ScreenRoute.WeatherScreen("")
+
                 WeatherUI(weatherScreen.weather)
             }
 
@@ -110,6 +106,8 @@ fun setNavHost(application: Application) {
                 val viewModel: LocationsViewModel = viewModel(
                     factory = LocationsViewModelFactory(repo)
                 )
+
+                currentScreenRoute.value = ScreenRoute.LocationScreen("")
 
                 //if weatherscreen.source == Start_screen -> do xyz
                 //else do favourites
@@ -131,18 +129,19 @@ fun setNavHost(application: Application) {
             }
 
             composable<ScreenRoute.FavouritesScreen> {
-                val dao = FavouritesDAOImpl.getInstance(application)
-                val repo = remember { FavouritesRepo(dao.getFavouritesDAO()) }
-                val viewModel: FavouritesViewModel = viewModel(
-                    factory = FavouritesViewModelFactory(repo)
-                )
 
-                FavScreenUI(
-                    goToLocationsForFavourites = {
-                        navController.navigate(ScreenRoute.LocationScreen(""))
-                    },
-                    viewModel = viewModel
-                )
+//                val dao = FavouritesDAOImpl.getInstance(application)
+//                val repo = remember { FavouritesRepo(dao.getFavouritesDAO()) }
+//                val viewModel: FavouritesViewModel = viewModel(
+//                    factory = FavouritesViewModelFactory(repo)
+//                )
+//
+//                FavScreenUI(
+//                    goToLocationsForFavourites = {
+//                        navController.navigate(ScreenRoute.LocationScreen(""))
+//                    },
+//                    viewModel = viewModel
+//                )
             }
 
             composable<ScreenRoute.NotificationsScreen> {
@@ -152,3 +151,4 @@ fun setNavHost(application: Application) {
     }
 
 }
+

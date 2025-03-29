@@ -112,6 +112,7 @@ import java.util.Locale
 
 @Composable
 fun WeatherUI(weather: WeatherResponse?) {
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -240,72 +241,6 @@ fun HourlyForecastCard(hourly: HourlyForecast) {
     }
 }
 
-///////////
-//@Composable
-////fun DailyForecast(daily: DailyForecast) {
-////    Card(
-////        modifier = Modifier
-////            .fillMaxWidth()
-////            .padding(vertical = 4.dp),
-////        shape = RoundedCornerShape(12.dp),
-////        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-////    ) {
-////        Row(
-////            modifier = Modifier
-////                .padding(16.dp)
-////                .fillMaxWidth(),
-////            verticalAlignment = Alignment.CenterVertically,
-////            horizontalArrangement = Arrangement.SpaceBetween
-////        ) {
-////            // Date column
-////            Column(modifier = Modifier.weight(1f)) {
-////                Text(
-////                    text = daily.dt.toWeekday(), // You'll need to implement this
-////                    style = MaterialTheme.typography.titleMedium,
-////                    fontWeight = FontWeight.SemiBold
-////                )
-////                Text(
-////                    text = daily.dt.toShortDate(), // You'll need to implement this
-////                    style = MaterialTheme.typography.bodySmall,
-////                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-////                )
-////            }
-////
-////            // Weather icon
-////            Image(
-////                painter = rememberImagePainter("https://openweathermap.org/img/wn/${daily.weather[0].icon}@2x.png"),
-////                contentDescription = daily.weather[0].description,
-////                modifier = Modifier.size(40.dp)
-////            )
-////
-////            // Temperature range
-////            Column(
-////                horizontalAlignment = Alignment.End,
-////                modifier = Modifier.weight(1f)
-////            ) {
-////                Row(verticalAlignment = Alignment.CenterVertically) {
-////                    Text(
-////                        text = "H: ${daily.temp}°",
-////                        style = MaterialTheme.typography.bodyLarge,
-////                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
-////                    )
-////                    Spacer(modifier = Modifier.width(8.dp))
-////                    Text(
-////                        text = "L: ${daily.temp}°",
-////                        style = MaterialTheme.typography.bodyMedium,
-////                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-////                    )
-////                }
-////                Text(
-////                    text = daily.weather[0].description.replaceFirstChar { it.uppercase() },
-////                    style = MaterialTheme.typography.labelMedium,
-////                    color = MaterialTheme.colorScheme.primary,
-////                    modifier = Modifier.padding(top = 4.dp)
-////                )
-////            }
-////        }
-////    }
-////}
 @Composable
 fun DailyForecast(daily: DailyForecast) {
     Card(

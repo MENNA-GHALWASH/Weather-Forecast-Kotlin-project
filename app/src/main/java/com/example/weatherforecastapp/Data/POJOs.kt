@@ -1,4 +1,5 @@
 package com.example.weatherforecastapp.Data
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -41,7 +42,18 @@ data class WeatherDescription(
     val icon: String
 )
 
-data class CityResponse(val name: String, val country: String,val lat: Double, val lon: Double)
-
-@Entity(tableName = "Favourites")
-data class FavouritesResp(val city:CityResponse,val weather:WeatherResponse){@PrimaryKey(autoGenerate = true) val id: Int = 0 }
+data class CityResponse(
+    val name: String = "",
+    val country: String = "",
+    val lat: Double = 0.0,
+    val lon: Double = 0.0
+)
+//
+//@Entity(tableName = "Favourites")
+//data class FavouritesResp(
+//    @Embedded val city: CityResponse,
+//    @Embedded val weather: WeatherResponse,
+//) {
+//    @PrimaryKey(autoGenerate = true)
+//    val id: Int = 0
+//}
