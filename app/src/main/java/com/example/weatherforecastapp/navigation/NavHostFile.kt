@@ -1,5 +1,7 @@
 
+import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -37,7 +39,7 @@ import com.example.weatherforecastapp.start_screen.viewmodel.StartScreenViewMode
 import com.google.gson.Gson
 
 @Composable
-fun setNavHost(application: Application) {
+fun setNavHost(application: Application,context: Context,activity:Activity) {
     val navController = rememberNavController()
 
     val currentScreenRoute = remember { mutableStateOf<ScreenRoute>(ScreenRoute.StartScreen) }
@@ -61,7 +63,7 @@ fun setNavHost(application: Application) {
 
         ) {
             composable<ScreenRoute.StartScreen> {
-                val repo = remember { StartScreenRepo() }
+                val repo = remember { StartScreenRepo(context) }
                 val viewModel: StartScreeViewModel = viewModel(
                     factory = StartScreenViewModelFactory(repo)
                 )
@@ -87,7 +89,7 @@ fun setNavHost(application: Application) {
                         }
                         else
                             navController.navigate(ScreenRoute.LocationScreen("Start_screen"))
-                    },viewModel,application,locviewModel
+                    },viewModel,activity,application,locviewModel
                 )
             }
 

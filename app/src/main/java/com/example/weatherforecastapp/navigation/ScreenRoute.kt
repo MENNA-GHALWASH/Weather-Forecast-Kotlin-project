@@ -62,7 +62,7 @@ class NavBarHelper(val route: ScreenRoute, val icon: ImageVector?, val title: St
             NavBarHelper(ScreenRoute.LocationScreen(""), Icons.Default.LocationOn, "Location"),
             NavBarHelper(ScreenRoute.WeatherScreen(""), Icons.Default.Home, "Weather"),
             NavBarHelper(ScreenRoute.FavouritesScreen, Icons.Default.Star, "Favorites"),
-            NavBarHelper(ScreenRoute.NotificationsScreen, Icons.Default.Notifications, "Notifications"),
+            NavBarHelper(ScreenRoute.NotificationsScreen, Icons.Default.Notifications, "Notify"),
             NavBarHelper(ScreenRoute.SettingsScreen, Icons.Default.Settings, "Settings")
         )
     }

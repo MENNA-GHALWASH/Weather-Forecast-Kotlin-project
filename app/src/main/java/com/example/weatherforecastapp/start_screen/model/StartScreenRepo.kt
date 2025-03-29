@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.start_screen.model
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -9,79 +10,79 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.*
 
-class StartScreenRepo() {
+class StartScreenRepo(private val context: Context) {
 
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient /*= LocationServices.getFusedLocationProviderClient(application)*/
-    var locationstate = mutableStateOf(Location(LocationManager.GPS_PROVIDER))
+    private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+    val locationstate = mutableStateOf<Location?>(null)
 
-
-
-    private fun checkLocPermission(application: Application): Boolean {
-        return ActivityCompat.checkSelfPermission(
-            application,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-
-
+    @SuppressLint("MissingPermission")
     fun getCurrentLoc(application: Application) {
-        if (!checkLocPermission(application)) return
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(application)
-        val locationRequest = LocationRequest.create().apply {
-            interval = 10000
-            fastestInterval = 5000
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        if (!checkLocPermission()) {
+            Log.e("LocationError", "Permission NOT granted")
+            return
         }
 
-        val locationCallback = object : LocationCallback() {
+        if (!isLocationEnabled()) {
+            Log.e("LocationError", "Location services are disabled")
+            enableLocPermission()
+            return
+        }
 
-            override fun onLocationResult(locationResult: LocationResult) {
-                locationResult ?: return
-                for (location in locationResult.locations) {
-                    locationstate.value = location
-                }
+        // First, try to get the last known location (faster)
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                Log.i("LocationSuccess", "Last known location found: $location")
+                locationstate.value = location
+            } else {
+                Log.w("LocationWarning", "Last known location is null. Requesting location updates...")
+
+                // Fallback: Request fresh location updates
+                val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000).build()
+
+                fusedLocationProviderClient.requestLocationUpdates(
+                    locationRequest,
+                    object : LocationCallback() {
+                        override fun onLocationResult(result: LocationResult) {
+                            result.lastLocation?.let {
+                                Log.i("LocationSuccess", "Location update received: $it")
+                                locationstate.value = it
+                            } ?: Log.e("LocationError", "Location result is null")
+                        }
+
+                        override fun onLocationAvailability(availability: LocationAvailability) {
+                            Log.i("LocationStatus", "Location available: ${availability.isLocationAvailable}")
+                        }
+                    },
+                    Looper.getMainLooper()
+                )
             }
+        }.addOnFailureListener { e ->
+            Log.e("LocationError", "Failed to get last known location", e)
         }
-
-        fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
     }
 
-    fun enableLocPermission(application: Application){
-        Toast.makeText(application,"turn on location", Toast.LENGTH_LONG).show()
+
+    fun checkLocPermission(): Boolean {
+        return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun enableLocPermission() {
+        Toast.makeText(context, "Turn on location", Toast.LENGTH_LONG).show()
         val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-        application.startActivity(intent)
+        context.startActivity(intent)
     }
 
-    fun isLocationEnabled(application: Application):Boolean{
-        val locMngr = application.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        return locMngr.isProviderEnabled(LocationManager.GPS_PROVIDER) || locMngr.isProviderEnabled(
-            LocationManager.NETWORK_PROVIDER)
+    fun isLocationEnabled(): Boolean {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
-
-    fun myfun(application: Application){
-        if (!isLocationEnabled(application)){
-            enableLocPermission(application)
-        }
-        else{
-            getCurrentLoc(application)
-        }
-    }
-    //we need a function to check if the location is enabled,the get current location
-    //if not ,then we need to enable it through the settings -> basically the enable location
 }

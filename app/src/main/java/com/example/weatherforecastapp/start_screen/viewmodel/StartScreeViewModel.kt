@@ -1,43 +1,48 @@
 package com.example.weatherforecastapp.start_screen.viewmodel
 
+import android.app.Activity
 import android.app.Application
 import android.location.Location
 import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.weatherforecastapp.selecting_location.get_location_with_map.model.LocationsRepo
-import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModel
+import androidx.core.app.ActivityCompat
 import com.example.weatherforecastapp.start_screen.model.StartScreenRepo
+import android.Manifest
+import android.content.pm.PackageManager
+import android.util.Log
 
-class StartScreeViewModel(var repo:StartScreenRepo): ViewModel() {
-//call repo methods
+class StartScreeViewModel(private val repo: StartScreenRepo) : ViewModel() {
 
-    fun getLocationAndPermission(application: Application){
-            if (!repo.isLocationEnabled(application)){
-                repo.enableLocPermission(application)
-            }
-            else{
-                repo.getCurrentLoc(application)
-            }
+    fun getLocationAndPermission(activity: Activity) {
+        if (!isPermissionEnabled(activity)) {
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                1000
+            )
+        } else {
+            repo.getCurrentLoc(activity.application)
+            Log.d("PermissionCheck", "ACCESS_FINE_LOCATION permission: ")
+
         }
+    }
 
-    fun getcurrentLoc(/*application: Application*/): MutableState<Location> {
-        //repo.getCurrentLoc(application)
+    fun getcurrentLoc(): MutableState<Location?> {
         return repo.locationstate
     }
 
-    fun getcurrentLocVM(application: Application){
+    fun getcurrentLocVM(application: Application) {
         repo.getCurrentLoc(application)
     }
 
-    fun isPermissionEnabled(application: Application):Boolean{
-        if (!repo.isLocationEnabled(application)){
-            return false
-        }
-        else{
-            return true
-        }
+    fun isPermissionEnabled(activity: Activity): Boolean {
+        return ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
 }
@@ -46,7 +51,6 @@ class StartScreenViewModelFactory(
     private val repo: StartScreenRepo
 ) : ViewModelProvider.Factory {
 
-    // @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(
         modelClass: Class<T>,
         extras: CreationExtras
