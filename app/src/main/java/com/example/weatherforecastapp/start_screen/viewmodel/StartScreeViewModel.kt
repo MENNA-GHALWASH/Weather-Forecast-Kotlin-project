@@ -12,8 +12,15 @@ import com.example.weatherforecastapp.start_screen.model.StartScreenRepo
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class StartScreeViewModel(private val repo: StartScreenRepo) : ViewModel() {
+
+    val locationState: StateFlow<Location?> = repo.locationstate
+
 
     fun getLocationAndPermission(activity: Activity) {
         if (!isPermissionEnabled(activity)) {
@@ -26,18 +33,15 @@ class StartScreeViewModel(private val repo: StartScreenRepo) : ViewModel() {
                 1000
             )
         } else {
-            repo.getCurrentLoc(activity.application)
-            Log.d("PermissionCheck", "ACCESS_FINE_LOCATION permission: ")
-
+            // Call getCurrentLoc() ONLY if permission is granted
+            if (repo.checkLocPermission()) {
+                repo.getCurrentLoc().onEach { location ->
+                    repo.locationstate.value = location
+                }.launchIn(viewModelScope) // Make sure the Flow is collected
+            } else {
+                Log.e("Location", "Permission was not granted, cannot fetch location")
+            }
         }
-    }
-
-    fun getcurrentLoc(): MutableState<Location?> {
-        return repo.locationstate
-    }
-
-    fun getcurrentLocVM(application: Application) {
-        repo.getCurrentLoc(application)
     }
 
     fun isPermissionEnabled(activity: Activity): Boolean {

@@ -42,18 +42,14 @@ data class WeatherDescription(
     val icon: String
 )
 
+//not used in methods
+@Entity(tableName = "Favourites")
 data class CityResponse(
     val name: String = "",
     val country: String = "",
     val lat: Double = 0.0,
-    val lon: Double = 0.0
+    val lon: Double = 0.0,
+    @PrimaryKey(autoGenerate = true) var id: Int = 0
 )
-//
-//@Entity(tableName = "Favourites")
-//data class FavouritesResp(
-//    @Embedded val city: CityResponse,
-//    @Embedded val weather: WeatherResponse,
-//) {
-//    @PrimaryKey(autoGenerate = true)
-//    val id: Int = 0
-//}
+
+

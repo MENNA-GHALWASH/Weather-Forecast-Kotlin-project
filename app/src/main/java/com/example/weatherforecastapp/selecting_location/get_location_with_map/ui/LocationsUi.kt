@@ -32,14 +32,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.weatherforecastapp.Data.DailyForecast
-import com.example.weatherforecastapp.Data.HourlyForecast
+import androidx.compose.ui.util.trace
+
 import com.example.weatherforecastapp.Data.WeatherResponse
 import com.example.weatherforecastapp.R
-import com.example.weatherforecastapp.selecting_location.get_location_with_map.model.LocationsRepo
+import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModel
-import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModelFactory
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -48,17 +46,23 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
 
 //go to favourites as optional with default value
-fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, HourlyForecast?, DailyForecast?*/)->Unit = {_/*,_,_*/ ->}) {
+/*
+fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?*/
+/*, HourlyForecast?, DailyForecast?*//*
+)->Unit = {_*/
+/*,_,_*//*
+ ->},fromFav:Boolean,favouriteViewModel:FavouritesViewModel) {
 
     val apiKey = stringResource(R.string.geocoding_api)
     var searchQuery by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
 
-    val searchResults by viewModel.searchResults.collectAsState()
+    //val searchResults by viewModel.searchResults.collectAsState()
+    val searchResults by viewModel.city_resp.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     val currentWeather by viewModel.current_weather.collectAsState()
@@ -110,22 +114,37 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
                 searchQuery = query
             },
             onSearch = {
-                if (currentLatLong.latitude != 0.0 && currentLatLong.longitude != 0.0) {
-                    viewModel.getCurrentWeather(
-                        currentLatLong.latitude,
-                        currentLatLong.longitude,
-                        apiKey
-                    )
+                if(!fromFav){
+                    if (currentLatLong.latitude != 0.0 && currentLatLong.longitude != 0.0) {
+                        viewModel.getCurrentWeather(
+                            currentLatLong.latitude,
+                            currentLatLong.longitude,
+                            apiKey
+                        )
 
-                    if (currentWeather != null) {
-                        Log.i("Navigation", "Navigating with weather data")
-                        goToWeather(currentWeather)
-                        //need to pass it my string
-                    } else {
-                        Log.e("Navigation", "Weather data is null")
+                        if (currentWeather != null) {
+                            Log.i("Navigation", "Navigating with weather data")
+                            goToWeather(currentWeather)
+                            //instead of sending the weather response, send the lat long to weather
+                            //let it handle the live updates
+                            //and navigate to weather ui
+                            //where inside weather ui, it will make the call for getting the live weather
+                            //using flows
+
+                            //need to pass it my string
+                        } else {
+                            Log.e("Navigation", "Weather data is null")
+                        }
                     }
+                    active = false
                 }
-                active = false
+                else{
+                    //store data in room
+                    //display the update in fav screen
+                    //go to fav screen
+
+                }
+
             },
             active = active,
             onActiveChange = {
@@ -158,42 +177,73 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
                     )
                 } else {
                     LazyColumn {
-                        items(searchResults) { result ->
-                            if (result!=null){
-                                var resAr = result.split(",")
+                        items(searchResults) { result -> // Now result is CityResponse
+                            Text(
+                                text = "${result.name}, ${result.country}",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        val selectedCity = result
+                                        defaultLocation = LatLng(result.lat, result.lon)
+                                        latLong = LatLng(result.lat, result.lon)
+                                        searchQuery = "${result.name}, ${result.country}"
+                                        active = false
 
-                                var lat = resAr[2].toDouble()
-                                var lon = resAr[3].toDouble()
-
-                                var res = resAr[0]+" , "+ resAr[1]
-
-                                Text(
-                                    text = res,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-
-                                            //pass lat and lon to a method that changes camera position
-                                            defaultLocation = LatLng(lat, lon)
-                                            latLong = LatLng(lat, lon)
-                                            searchQuery = res
-                                            active = false
-
-                                            //in here we get the item -> which is the city name,
-                                            //then we pass it to a method which will:
-                                            //1: get its latlong
-                                            //2: call the onecallweather api
-                                            //3: get the weather data
-                                            //4: change the map's camera position
-                                            //5: when we click on search, we will get navigated to the next screen
-                                            //6: with the data already received
+                                        if (!fromFav) {
+                                            viewModel.getCurrentWeather(result.lat, result.lon, apiKey)
+                                            goToWeather(currentWeather)
+                                        } else {
+                                            // Send city to Favourites
+                                            Log.i("Favourites", "Adding to Favourites: $selectedCity")
+                                            favouriteViewModel.addToFavourites(selectedCity)
                                         }
-                                        .padding(16.dp)
-                                )
-                            }
-
+                                    }
+                                    .padding(16.dp)
+                            )
                         }
                     }
+
+                    */
+/*
+                                        LazyColumn {
+                                            items(searchResults) { result ->
+                                                if (result!=null){
+                                                    var resAr = result.split(",")
+
+                                                    var lat = resAr[2].toDouble()
+                                                    var lon = resAr[3].toDouble()
+
+                                                    var res = resAr[0]+" , "+ resAr[1]
+
+                                                    Text(
+                                                        text = res,
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .clickable {
+
+                                                                //pass lat and lon to a method that changes camera position
+                                                                defaultLocation = LatLng(lat, lon)
+                                                                latLong = LatLng(lat, lon)
+                                                                searchQuery = res
+                                                                active = false
+
+                                                                //in here we get the item -> which is the city name,
+                                                                //then we pass it to a method which will:
+                                                                //1: get its latlong
+                                                                //2: call the onecallweather api
+                                                                //3: get the weather data
+                                                                //4: change the map's camera position
+                                                                //5: when we click on search, we will get navigated to the next screen
+                                                                //6: with the data already received
+                                                            }
+                                                            .padding(16.dp)
+                                                    )
+                                                }
+
+                                            }
+                                        }
+                    *//*
+
                 }
             }
         }
@@ -217,4 +267,139 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?/*, H
 
 
     }
+}*/
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LocationsUI(
+    viewModel: LocationsViewModel,
+    goToWeather: (WeatherResponse?,Boolean) -> Unit ,
+    favouriteViewModel: FavouritesViewModel,
+    fromFav: Boolean
+
+    ) {
+    val apiKey = stringResource(R.string.geocoding_api)
+
+    var searchQuery by remember { mutableStateOf("") }
+    var active by remember { mutableStateOf(false) }
+
+    val searchResults by viewModel.city_resp.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val currentWeather by viewModel.current_weather.collectAsState()
+
+    var defaultLocation by remember { mutableStateOf(LatLng(30.0444, 31.2357)) }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(defaultLocation, 10f)
+    }
+
+    var latLong by remember { mutableStateOf(LatLng(0.0, 0.0)) }
+    val currentLatLong by rememberUpdatedState(latLong)
+
+    // Fetch cities based on search query
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isNotEmpty()) {
+            viewModel.searchCities(searchQuery, apiKey)
+        }
+    }
+
+    // Animate camera when location updates
+    LaunchedEffect(defaultLocation) {
+        cameraPositionState.animate(
+            CameraUpdateFactory.newLatLngZoom(defaultLocation, 10f),
+            durationMs = 1000
+        )
+    }
+
+    Column(
+        modifier = Modifier.padding(15.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SearchBar(
+            query = searchQuery,
+            onQueryChange = { query -> searchQuery = query },
+            onSearch = {
+                if (fromFav == false) {
+                    if (currentLatLong.latitude != 0.0 && currentLatLong.longitude != 0.0) {
+                        viewModel.getCurrentWeather(currentLatLong.latitude, currentLatLong.longitude, apiKey) //changes the value of viewmodel's current weather
+                        //now we must get current weather
+                        goToWeather(viewModel.current_weather.value,false)
+                        Log.i("fromFav", "LocationsUI: fromFav is $fromFav")
+                    }
+                    active = false
+                } else {
+                    // Save to Room DB and navigate back to favourites
+                    searchResults.firstOrNull { it.lat == currentLatLong.latitude && it.lon == currentLatLong.longitude }
+                        ?.let { favouriteViewModel.addToFavourites(it) }
+                    Log.i("fromFav", "LocationsUI: fromFav is $fromFav")
+                    goToWeather(null, true) //this must be the root source of the error
+
+                    active = false
+                    //for some reason the flag doesnt change
+                }
+            },
+            active = active,
+            onActiveChange = { active = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(text = "Search cities") },
+            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
+            trailingIcon = {
+                if (active) {
+                    Icon(
+                        modifier = Modifier.clickable {
+                            if (searchQuery.isNotEmpty()) searchQuery = "" else active = false
+                        },
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Clear"
+                    )
+                }
+            }
+        ) {
+            if (searchQuery.isNotEmpty()) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(16.dp)
+                    )
+                } else {
+                    LazyColumn {
+                        val x = viewModel.city_resp.value
+                        items(x) { result ->
+                            Text(
+                                text = "${result.name}, ${result.country}",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        defaultLocation = LatLng(result.lat, result.lon)
+                                        latLong = LatLng(result.lat, result.lon)
+                                        searchQuery = "${result.name}, ${result.country}"
+                                        active = false
+                                    }
+                                    .padding(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Google Map with marker
+        GoogleMap(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            cameraPositionState = cameraPositionState,
+            onMapClick = { loc -> latLong = loc }
+        ) {
+            Marker(
+                state = MarkerState(position = latLong),
+                title = "Selected Location",
+                snippet = "Lat: ${latLong.latitude}, Lng: ${latLong.longitude}"
+            )
+        }
+    }
 }
+//my hyp:
+//the updated version doesnt display search results in the lazy column
+//it doesn't update the value of latlong location/current location
+//since default impl of fromFav is false, it seems to not be updated

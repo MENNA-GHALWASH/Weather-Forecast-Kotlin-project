@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.weatherforecastapp.Data.CityResponse
 import com.example.weatherforecastapp.Data.DailyForecast
 import com.example.weatherforecastapp.Data.HourlyForecast
 import com.example.weatherforecastapp.Data.WeatherResponse
@@ -21,6 +22,11 @@ class LocationsViewModel(private val repo: LocationsRepo) : ViewModel() {
     private val _searchResults = MutableStateFlow<List<String>>(emptyList())
     val searchResults: StateFlow<List<String>> get() = _searchResults
 
+    //for city response
+    private val _city_resp = MutableStateFlow<List<CityResponse>>(emptyList())//not sure if this is right
+    val city_resp:StateFlow<List<CityResponse>> get() = _city_resp
+
+////
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> get() = _isLoading
 
@@ -32,13 +38,14 @@ class LocationsViewModel(private val repo: LocationsRepo) : ViewModel() {
 
     private val _hourly_weather = MutableStateFlow<HourlyForecast?>(null)//not sure if this is right
     val hourly_weather:StateFlow<HourlyForecast?> get() = _hourly_weather
+////
 
 
     fun searchCities(place: String, apiKey: String) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val cities = repo.fetchCities(place, apiKey)
+                val cities = repo.fetchCitiesStrings(place, apiKey)
                 _searchResults.value = cities
 
                 Log.i("Cities", "searchCities: $cities")
@@ -49,6 +56,23 @@ class LocationsViewModel(private val repo: LocationsRepo) : ViewModel() {
             }
         }
     }
+
+    fun getCities(place: String, apiKey: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val cities = repo.fetchCities(place, apiKey)
+                _city_resp.value = cities
+
+                Log.i("Cities", "searchCities: $cities")
+            } catch (e: Exception) {
+                _searchResults.value = listOf("Error: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
 
 
     fun getCurrentWeather(lat:Double,lon:Double,apiKey: String){

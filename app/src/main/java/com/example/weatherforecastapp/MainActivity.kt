@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
 
     private val REQUEST_LOCATION_CODE = 1000
 
-    private val repo by lazy { StartScreenRepo(this) }
+    private val repo by lazy { StartScreenRepo(this,this) }
     private val viewmodel by lazy { StartScreeViewModel(repo) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +69,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        viewmodel.getLocationAndPermission(this)
+        if (viewmodel.isPermissionEnabled(this)) {
+            viewmodel.getLocationAndPermission(this)
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -82,7 +84,7 @@ class MainActivity : ComponentActivity() {
 
         if (requestCode == REQUEST_LOCATION_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                viewmodel.getcurrentLocVM(this.application)
+                viewmodel.getLocationAndPermission(this)
             } else {
                 Toast.makeText(this, "Location permission denied!", Toast.LENGTH_SHORT).show()
             }
@@ -142,26 +144,50 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val currentLocation by viewModel.locationState.collectAsState()
+
+            LaunchedEffect(currentLocation) {
+                if(currentLocation!=null){
+                    val weather = locVM.getCurrentWeather(
+                        currentLocation!!.latitude,
+                        currentLocation!!.longitude,
+                        apikey
+                    )
+                    goToLocationOrWeather(true, locVM.current_weather.value)
+                }
+                else{
+                    //make current loc not null by retriving location
+                    viewModel.getLocationAndPermission(activity)
+                }
+            }
+            //why is launchedeffect outside the button? what is it?
+
             Button(
                 onClick = {
-                    viewModel.getLocationAndPermission(activity)
+                    if (viewModel.isPermissionEnabled(activity)){
+                        viewModel.getLocationAndPermission(activity)
+                        if (currentLocation /*==*/!= null) {
+                            Toast.makeText(application, "Fetching location...", Toast.LENGTH_SHORT).show()
+                            viewModel.getLocationAndPermission(activity)
+                            var loc = viewModel.locationState.value
+                                loc?.let {
+                                    locVM.getCurrentWeather(loc.latitude,
+                                        it.longitude,apikey)
+                                }
+                            var x = locVM.current_weather.value
 
-                    val isPermissionGranted = viewModel.isPermissionEnabled(activity)
-                    Log.i("permission", "MainScreen: is permission granted? $isPermissionGranted")
+                            goToLocationOrWeather(true,x)
+                            Log.i("getWeather", "MainScreen: x = $x")
 
-                    if (isPermissionGranted) {
-                        val loc = viewModel.getcurrentLoc().value
-                        Log.i("location", "MainScreen: $loc")
-                        if (loc != null) {
-                            var weather = locVM.getCurrentWeather(loc.latitude, loc.longitude, apikey)
-                            Log.i("getWeather", "MainScreen: $weather")
-                            goToLocationOrWeather(true, locVM.current_weather.value)
-                        } else {
-                            Toast.makeText(application, "Fetching location, please wait...", Toast.LENGTH_SHORT).show()
+//                            goToLocationOrWeather(true,y)
+//                            Log.i("getWeather", "MainScreen: y = $y")
                         }
-                    } else {
-                        Toast.makeText(application, "Please enable location permissions", Toast.LENGTH_SHORT).show()
-                        goToLocationOrWeather(false, locVM.current_weather.value)
+                        else {
+                            viewModel.getLocationAndPermission(activity)
+                            Toast.makeText(application, "Location retrieved is null", Toast.LENGTH_SHORT).show()
+                            goToLocationOrWeather(false,null)
+
+                        }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDDB130))
@@ -171,3 +197,4 @@ fun MainScreen(
         }
     }
 }
+//permission is enabled

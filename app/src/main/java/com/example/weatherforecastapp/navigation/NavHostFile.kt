@@ -23,16 +23,21 @@ import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import com.example.weatherforecastapp.Data.WeatherResponse
 import com.example.weatherforecastapp.MainScreen
+import com.example.weatherforecastapp.favourites.model.FavouritesDAOImpl
+import com.example.weatherforecastapp.favourites.model.FavouritesRepo
+import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
+import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModelFactory
+import com.example.weatherforecastapp.notifications_and_Alerts.ui.WeatherAlertsUI
 //import com.example.weatherforecastapp.favourites.model.FavouritesDAO
 //import com.example.weatherforecastapp.favourites.model.FavouritesDAOImpl
 //import com.example.weatherforecastapp.favourites.model.FavouritesRepo
 //import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
 //import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModelFactory
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.model.LocationsRepo
-import com.example.weatherforecastapp.selecting_location.get_location_with_map.ui.LocationsActivity
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.ui.LocationsUI
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModel
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModelFactory
+import com.example.weatherforecastapp.settings.ui.SettingsUI
 import com.example.weatherforecastapp.start_screen.model.StartScreenRepo
 import com.example.weatherforecastapp.start_screen.viewmodel.StartScreeViewModel
 import com.example.weatherforecastapp.start_screen.viewmodel.StartScreenViewModelFactory
@@ -63,7 +68,7 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
 
         ) {
             composable<ScreenRoute.StartScreen> {
-                val repo = remember { StartScreenRepo(context) }
+                val repo = remember { StartScreenRepo(context,activity) }
                 val viewModel: StartScreeViewModel = viewModel(
                     factory = StartScreenViewModelFactory(repo)
                 )
@@ -88,7 +93,7 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                             }
                         }
                         else
-                            navController.navigate(ScreenRoute.LocationScreen("Start_screen"))
+                            navController.navigate(ScreenRoute.LocationScreen())
                     },viewModel,activity,application,locviewModel
                 )
             }
@@ -109,45 +114,70 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                     factory = LocationsViewModelFactory(repo)
                 )
 
-                currentScreenRoute.value = ScreenRoute.LocationScreen("")
+                val dao = FavouritesDAOImpl.getInstance(application)
+                val favrepo = remember { FavouritesRepo(dao.getFavouritesDAO()) }
+                val favviewModel: FavouritesViewModel = viewModel(
+                    factory = FavouritesViewModelFactory(favrepo)
+                )
+//
+
+                currentScreenRoute.value = ScreenRoute.LocationScreen()
 
                 //if weatherscreen.source == Start_screen -> do xyz
                 //else do favourites
 
                 LocationsUI(
                     viewModel = viewModel,
-                    goToWeather = { current ->
-                        if(weatherScreen.source=="Start_screen"){
+                    goToWeather = { current,flag ->
+                        if(!flag){ //not from fav screen
                             val gson = Gson()
                             navController.navigate(ScreenRoute.WeatherScreen(gson.toJson(current)))
                         }
                         else{
+                            //navController.popBackStack()
+                            navController.navigate(ScreenRoute.FavouritesScreen)
                             //pop the back stack and send the data back to favourites
                             //pass data to favourites or simply observe using flow
                             //navController.navigate(ScreenRoute.FavouritesScreen) //more to do here
                         }
-                    }
+                    },favviewModel,false
                 )
             }
 
             composable<ScreenRoute.FavouritesScreen> {
 
-//                val dao = FavouritesDAOImpl.getInstance(application)
-//                val repo = remember { FavouritesRepo(dao.getFavouritesDAO()) }
-//                val viewModel: FavouritesViewModel = viewModel(
-//                    factory = FavouritesViewModelFactory(repo)
-//                )
+                val dao = FavouritesDAOImpl.getInstance(application)
+                val repo = remember { FavouritesRepo(dao.getFavouritesDAO()) }
+                val viewModel: FavouritesViewModel = viewModel(
+                    factory = FavouritesViewModelFactory(repo)
+                )
 //
-//                FavScreenUI(
-//                    goToLocationsForFavourites = {
-//                        navController.navigate(ScreenRoute.LocationScreen(""))
-//                    },
-//                    viewModel = viewModel
-//                )
+                FavScreenUI(
+                    goToLocationsForFavourites = {
+                        navController.navigate(ScreenRoute.LocationScreen(true))
+                    },
+                    viewModel = viewModel
+                )
+
             }
 
             composable<ScreenRoute.NotificationsScreen> {
 
+                //repo
+                //factory
+//                WeatherAlertsUI(
+//                   factory
+//                )
+            }
+
+            composable<ScreenRoute.SettingsScreen>{
+
+                //repo
+                //factory
+
+//                SettingsUI(
+//                   factory
+//                )
             }
         }
     }

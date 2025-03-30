@@ -1,8 +1,115 @@
+//package com.example.weatherforecastapp.start_screen.model
+//
+//import android.Manifest
+//import android.annotation.SuppressLint
+//import android.app.Activity
+//import android.app.Application
+//import android.content.Context
+//import android.content.Intent
+//import android.content.pm.PackageManager
+//import android.location.Location
+//import android.location.LocationManager
+//import android.os.Looper
+//import android.provider.Settings
+//import android.util.Log
+//import android.widget.Toast
+//import androidx.compose.runtime.mutableStateOf
+//import androidx.core.app.ActivityCompat
+//import com.google.android.gms.location.*
+//import kotlinx.coroutines.CoroutineScope
+//import kotlinx.coroutines.Dispatchers
+//import kotlinx.coroutines.channels.awaitClose
+//import kotlinx.coroutines.flow.*
+//
+//class StartScreenRepo(private val context: Context, private val activity: Activity) {
+//    private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+//    val locationstate = MutableStateFlow<Location?>(null)
+//    private var locationCallback: LocationCallback? = null
+//
+//
+//    // i have no idea what to do?
+//    @SuppressLint("MissingPermission")
+//    fun getCurrentLoc(): Flow<Location> = callbackFlow {
+//        if (!checkLocPermission()) {
+//            Log.e("LocationError", "Permission NOT granted")
+//            close()
+//            return@callbackFlow
+//        }
+//
+//        if (!isLocationEnabled()) {
+//            Log.e("LocationError", "Location services are disabled")
+//            enableLocPermission()
+//            close()
+//            return@callbackFlow
+//        }
+//
+//        val callback = object : LocationCallback() {
+//            override fun onLocationResult(result: LocationResult) {
+//                result.lastLocation?.let { location ->
+//                    trySend(location)
+//
+//                }
+//            }
+//        }
+//        locationCallback = callback
+//
+//        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+//            if (location != null) {
+//                trySend(location)
+//            }
+//        }
+//
+//        val locationRequest = LocationRequest.Builder(
+//            Priority.PRIORITY_HIGH_ACCURACY,
+//            15000
+//        ).build()
+//
+//        fusedLocationProviderClient.requestLocationUpdates(
+//            locationRequest,
+//            callback,
+//            Looper.getMainLooper()
+//        )
+//
+//        awaitClose {
+//            locationCallback?.let {
+//                fusedLocationProviderClient.removeLocationUpdates(it)
+//            }
+//        }
+//    }.onEach { location ->
+//        locationstate.value = location
+//    }
+//
+//    fun stopLocationUpdates() {
+//        locationCallback?.let {
+//            fusedLocationProviderClient.removeLocationUpdates(it)
+//            locationCallback = null
+//        }
+//    }
+//
+//    fun checkLocPermission(): Boolean {
+//        return ActivityCompat.checkSelfPermission(
+//            activity,
+//            Manifest.permission.ACCESS_FINE_LOCATION
+//        ) == PackageManager.PERMISSION_GRANTED
+//    }
+//
+//    fun enableLocPermission() {
+//        Toast.makeText(context, "Turn on location", Toast.LENGTH_LONG).show()
+//        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+//        context.startActivity(intent)
+//    }
+//
+//    fun isLocationEnabled(): Boolean {
+//        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+//        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+//                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+//    }
+//}
 package com.example.weatherforecastapp.start_screen.model
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Application
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -16,62 +123,85 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
-class StartScreenRepo(private val context: Context) {
-
+class StartScreenRepo(private val context: Context, private val activity: Activity) {
     private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-    val locationstate = mutableStateOf<Location?>(null)
+    val locationstate = MutableStateFlow<Location?>(null)
+    private var locationCallback: LocationCallback? = null
 
     @SuppressLint("MissingPermission")
-    fun getCurrentLoc(application: Application) {
+    fun getCurrentLoc() = callbackFlow {
         if (!checkLocPermission()) {
             Log.e("LocationError", "Permission NOT granted")
-            return
+            close()
+            return@callbackFlow
         }
 
         if (!isLocationEnabled()) {
             Log.e("LocationError", "Location services are disabled")
             enableLocPermission()
-            return
+            close()
+            return@callbackFlow
         }
 
-        // First, try to get the last known location (faster)
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            15000 // 15 seconds
+        ).build()
+
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                result.lastLocation?.let { location ->
+                    trySend(location)
+                    Log.d("LocationUpdate", "New location: ${location.latitude}, ${location.longitude}")
+                } ?: run {
+                    Log.e("LocationUpdate", "Location result is null")
+                }
+            }
+
+            override fun onLocationAvailability(availability: LocationAvailability) {
+                Log.d("LocationUpdate", "Location availability: ${availability.isLocationAvailable}")
+            }
+        }
+        locationCallback = callback
+
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
-                Log.i("LocationSuccess", "Last known location found: $location")
-                locationstate.value = location
-            } else {
-                Log.w("LocationWarning", "Last known location is null. Requesting location updates...")
-
-                // Fallback: Request fresh location updates
-                val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000).build()
-
-                fusedLocationProviderClient.requestLocationUpdates(
-                    locationRequest,
-                    object : LocationCallback() {
-                        override fun onLocationResult(result: LocationResult) {
-                            result.lastLocation?.let {
-                                Log.i("LocationSuccess", "Location update received: $it")
-                                locationstate.value = it
-                            } ?: Log.e("LocationError", "Location result is null")
-                        }
-
-                        override fun onLocationAvailability(availability: LocationAvailability) {
-                            Log.i("LocationStatus", "Location available: ${availability.isLocationAvailable}")
-                        }
-                    },
-                    Looper.getMainLooper()
-                )
+                trySend(location)
             }
-        }.addOnFailureListener { e ->
-            Log.e("LocationError", "Failed to get last known location", e)
+        }
+
+        fusedLocationProviderClient.requestLocationUpdates(
+            locationRequest,
+            callback,
+            Looper.getMainLooper()
+        )
+
+        awaitClose {
+            locationCallback?.let {
+                fusedLocationProviderClient.removeLocationUpdates(it)
+            }
+        }
+    }.onEach { location ->
+        locationstate.value = location
+    }
+
+    fun stopLocationUpdates() {
+        locationCallback?.let {
+            fusedLocationProviderClient.removeLocationUpdates(it)
+            locationCallback = null
         }
     }
 
-
     fun checkLocPermission(): Boolean {
-        return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        return ActivityCompat.checkSelfPermission(
+            activity,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     fun enableLocPermission() {

@@ -1,80 +1,3 @@
-////package com.example.weatherforecastapp.home.daily_forecast.ui
-////
-////import androidx.compose.foundation.layout.Column
-////import androidx.compose.foundation.layout.Row
-////import androidx.compose.foundation.lazy.LazyRow
-////import androidx.compose.material3.Text
-////import androidx.compose.runtime.Composable
-////import com.example.weatherforecastapp.Data.HourlyForecast
-////import com.example.weatherforecastapp.Data.WeatherResponse
-////
-////@Composable
-////fun WeatherUI(weather: WeatherResponse?){
-////    Column() {
-////        if (weather != null) {
-////            Text( text = weather.timezone) // center
-////            Text(text = weather.hourly[0].temp.toString()) //temprature
-////            //big and bold
-////            Text(text = "Feels like "+weather.hourly[0].feelsLike.toString())
-////
-////            LazyRow() {
-////                items(weather.hourly.size){
-////                    hourlyWeatherColumn(weather.hourly[it])
-////                }
-////            }
-////        }
-////    }
-////}
-////
-////@Composable
-////fun hourlyWeatherColumn(hourly:HourlyForecast){
-////    Column(){
-////       Text( text = hourly.temp.toString())
-////        Text(text =  hourly.feelsLike.toString())
-////        Text( hourly.weather[0].icon) //for now
-////        Text( hourly.weather[0].description)
-////    }
-////}//i have a feeling this ui is wrong
-//import androidx.compose.foundation.Image
-//import androidx.compose.foundation.layout.Column
-//import androidx.compose.foundation.lazy.LazyRow
-//import androidx.compose.foundation.lazy.items
-//import androidx.compose.material3.Text
-//import androidx.compose.runtime.Composable
-//import coil.compose.rememberImagePainter
-//import com.example.weatherforecastapp.Data.HourlyForecast
-//import com.example.weatherforecastapp.Data.WeatherResponse
-//
-//@Composable
-//fun WeatherUI(weather: WeatherResponse?) {
-//    Column {
-//        if (weather != null) {
-//            Text(text = weather.timezone) // center
-//            Text(text = weather.hourly[0].temp.toString()) // temperature
-//            // big and bold
-//            Text(text = "Feels like " + weather.hourly[0].feelsLike.toString())
-//
-//            LazyRow {
-//                items(weather.hourly) { hourly ->
-//                    hourlyWeatherColumn(hourly)
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//@Composable
-//fun hourlyWeatherColumn(hourly: HourlyForecast) {
-//    Column {
-//        Text(text = hourly.temp.toString())
-//        Text(text = hourly.feelsLike.toString())
-//        Image(
-//            painter = rememberImagePainter("https://openweathermap.org/img/wn/${hourly.weather[0].icon}@2x.png"),
-//            contentDescription = hourly.weather[0].description
-//        )
-//        Text(text = hourly.weather[0].description)
-//    }
-//}
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -112,7 +35,6 @@ import java.util.Locale
 
 @Composable
 fun WeatherUI(weather: WeatherResponse?) {
-
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -191,13 +113,12 @@ fun WeatherUI(weather: WeatherResponse?) {
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            ////////
             LazyColumn(
-                //verticalArrangement = Arrangement.spacedBy(12.dp),
-                //modifier = Modifier.padding(bottom = 16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                items(weather.daily.take(5)) { daily -> // Limit to 24 hours for better UX
-                    DailyForecast(daily)
+                items(weather.daily.take(5)) { daily -> // Limit to 5 days for better UX
+                    DailyForecastCard(daily)
                 }
             }
         }
@@ -242,10 +163,10 @@ fun HourlyForecastCard(hourly: HourlyForecast) {
 }
 
 @Composable
-fun DailyForecast(daily: DailyForecast) {
+fun DailyForecastCard(daily: DailyForecast) {
     Card(
         modifier = Modifier
-         //   .fillMaxWidth()
+            .fillMaxWidth()
             .padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -255,7 +176,7 @@ fun DailyForecast(daily: DailyForecast) {
                 .padding(16.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            //horizontalArrangement = Arrangement.SpaceBetween // Fixes the spacing issue
+            horizontalArrangement = Arrangement.SpaceBetween // Fixes the spacing issue
         ) {
             // Date column
             Column(modifier = Modifier.wrapContentWidth()) {
@@ -268,6 +189,18 @@ fun DailyForecast(daily: DailyForecast) {
                     text = daily.dt.toShortDate(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = "Humidity: ${daily.humidity}%",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(
+                    text = "Wind Speed: ${daily.feelsLike} m/s",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(
+                    text = "Pressure: ${daily.pressure} hPa",
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
 
@@ -285,13 +218,13 @@ fun DailyForecast(daily: DailyForecast) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "H: ${daily.temp}°",
+                        text = "Day: ${daily.temp.day}°",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "L: ${daily.temp}°",
+                        text = "Night: ${daily.temp.night}°",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -307,7 +240,6 @@ fun DailyForecast(daily: DailyForecast) {
     }
 }
 
-
 // Add these extension functions for date formatting
 fun Long.toWeekday(): String {
     val date = Date(this * 1000) // Convert seconds to milliseconds
@@ -320,6 +252,7 @@ fun Long.toShortDate(): String {
     val formatter = SimpleDateFormat("MMM d", Locale.getDefault())
     return formatter.format(date)
 }
+
 // Extension function to convert timestamp to hour (simplified)
 fun Long.toHour(): String {
     val date = Date(this * 1000)

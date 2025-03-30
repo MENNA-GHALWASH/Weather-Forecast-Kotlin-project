@@ -23,7 +23,7 @@ sealed class ScreenRoute(){
 
     //so location screen wont take anydata
     @Serializable
-    data class LocationScreen(val source:String): ScreenRoute()
+    data class LocationScreen(val fromFav:Boolean=false): ScreenRoute()
 
     @Serializable
     data class WeatherScreen(val weatherJson: String) : ScreenRoute() {
@@ -44,7 +44,7 @@ sealed class ScreenRoute(){
     override fun toString(): String {
         return when (this) {
             is StartScreen -> "StartScreen"
-            is LocationScreen -> "LocationScreen/${source}"
+            is LocationScreen -> "LocationScreen/${fromFav}"
             is WeatherScreen -> "WeatherScreen/${weatherJson}"
             is NotificationsScreen -> "NotificationsScreen"
             is FavouritesScreen -> "FavouritesScreen"
@@ -59,7 +59,7 @@ sealed class ScreenRoute(){
 class NavBarHelper(val route: ScreenRoute, val icon: ImageVector?, val title: String) {
     companion object {
         val Routes = listOf<NavBarHelper>(
-            NavBarHelper(ScreenRoute.LocationScreen(""), Icons.Default.LocationOn, "Location"),
+            NavBarHelper(ScreenRoute.LocationScreen(), Icons.Default.LocationOn, "Location"),
             NavBarHelper(ScreenRoute.WeatherScreen(""), Icons.Default.Home, "Weather"),
             NavBarHelper(ScreenRoute.FavouritesScreen, Icons.Default.Star, "Favorites"),
             NavBarHelper(ScreenRoute.NotificationsScreen, Icons.Default.Notifications, "Notify"),
