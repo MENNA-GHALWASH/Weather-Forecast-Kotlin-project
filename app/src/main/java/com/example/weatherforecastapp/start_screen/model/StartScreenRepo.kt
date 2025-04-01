@@ -133,7 +133,7 @@ class StartScreenRepo(private val context: Context, private val activity: Activi
     val locationstate = MutableStateFlow<Location?>(null)
     private var locationCallback: LocationCallback? = null
 
-    @SuppressLint("MissingPermission")
+    /*@SuppressLint("MissingPermission")
     fun getCurrentLoc() = callbackFlow {
         if (!checkLocPermission()) {
             Log.e("LocationError", "Permission NOT granted")
@@ -188,7 +188,65 @@ class StartScreenRepo(private val context: Context, private val activity: Activi
         }
     }.onEach { location ->
         locationstate.value = location
+    }*/
+
+    @SuppressLint("MissingPermission")
+    fun getCurrentLoc() = callbackFlow {
+        if (!checkLocPermission()) {
+            Log.e("LocationError", "Permission NOT granted")
+            close()
+            return@callbackFlow
+        }
+
+        if (!isLocationEnabled()) {
+            Log.e("LocationError", "Location services are disabled")
+            enableLocPermission()
+            close()
+            return@callbackFlow
+        }
+
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            5000 // Fetch every 5 seconds for testing
+        ).build()
+
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                result.lastLocation?.let { location ->
+                    trySend(location)
+                    Log.d("LocationUpdate", "New location: ${location.latitude}, ${location.longitude}")
+                } ?: run {
+                    Log.e("LocationUpdate", "Location result is null")
+                }
+            }
+
+            override fun onLocationAvailability(availability: LocationAvailability) {
+                Log.d("LocationUpdate", "Location availability: ${availability.isLocationAvailable}")
+            }
+        }
+        locationCallback = callback
+
+        // First, check last known location
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                trySend(location)
+            } else {
+                // If lastLocation is null, request updates
+                fusedLocationProviderClient.requestLocationUpdates(
+                    locationRequest,
+                    callback,
+                    Looper.getMainLooper()
+                )
+            }
+        }
+
+        awaitClose {
+            locationCallback?.let {
+                fusedLocationProviderClient.removeLocationUpdates(it)
+            }
+        }
     }
+
 
     fun stopLocationUpdates() {
         locationCallback?.let {
@@ -198,11 +256,35 @@ class StartScreenRepo(private val context: Context, private val activity: Activi
     }
 
     fun checkLocPermission(): Boolean {
-        return ActivityCompat.checkSelfPermission(
+        val fineLocation = ActivityCompat.checkSelfPermission(
             activity,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
+
+        val coarseLocation = ActivityCompat.checkSelfPermission(
+            activity,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        Log.d("PermissionDebug", "Fine Location Permission: $fineLocation")
+        Log.d("PermissionDebug", "Coarse Location Permission: $coarseLocation")
+
+        if (!fineLocation) {
+            Log.w("PermissionDebug", "FINE location missing! Requesting again...")
+            requestFineLocation()
+        }
+
+        return fineLocation || coarseLocation
     }
+
+    fun requestFineLocation() {
+        ActivityCompat.requestPermissions(
+            activity,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            1001 // Different request code for fine location
+        )
+    }
+
 
     fun enableLocPermission() {
         Toast.makeText(context, "Turn on location", Toast.LENGTH_LONG).show()

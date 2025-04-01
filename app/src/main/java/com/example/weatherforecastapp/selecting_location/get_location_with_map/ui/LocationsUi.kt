@@ -272,7 +272,7 @@ fun LocationsUI(viewModel: LocationsViewModel,goToWeather:(WeatherResponse?*/
 @Composable
 fun LocationsUI(
     viewModel: LocationsViewModel,
-    goToWeather: (WeatherResponse?,Boolean) -> Unit ,
+    goToWeather: (WeatherResponse?,Boolean,String) -> Unit ,
     favouriteViewModel: FavouritesViewModel,
     fromFav: Boolean
 
@@ -297,7 +297,13 @@ fun LocationsUI(
     // Fetch cities based on search query
     LaunchedEffect(searchQuery) {
         if (searchQuery.isNotEmpty()) {
-            viewModel.searchCities(searchQuery, apiKey)
+            viewModel.getCities(searchQuery, apiKey)
+        }
+    }
+
+    LaunchedEffect(latLong) {
+        if ((latLong.latitude!=0.0)&&(latLong.longitude!=0.0)) {
+            viewModel.getCurrentWeather(currentLatLong.latitude, currentLatLong.longitude, apiKey)
         }
     }
 
@@ -320,9 +326,11 @@ fun LocationsUI(
             onSearch = {
                 if (fromFav == false) {
                     if (currentLatLong.latitude != 0.0 && currentLatLong.longitude != 0.0) {
-                        viewModel.getCurrentWeather(currentLatLong.latitude, currentLatLong.longitude, apiKey) //changes the value of viewmodel's current weather
-                        //now we must get current weather
-                        goToWeather(viewModel.current_weather.value,false)
+                      //  viewModel.getCurrentWeather(currentLatLong.latitude, currentLatLong.longitude, apiKey) //changes the value of viewmodel's current weather
+
+                        //
+                        goToWeather(currentWeather,false/*send the search query*/,"")
+
                         Log.i("fromFav", "LocationsUI: fromFav is $fromFav")
                     }
                     active = false
@@ -331,7 +339,7 @@ fun LocationsUI(
                     searchResults.firstOrNull { it.lat == currentLatLong.latitude && it.lon == currentLatLong.longitude }
                         ?.let { favouriteViewModel.addToFavourites(it) }
                     Log.i("fromFav", "LocationsUI: fromFav is $fromFav")
-                    goToWeather(null, true) //this must be the root source of the error
+                    goToWeather(null, true,searchQuery) //this must be the root source of the error
 
                     active = false
                     //for some reason the flag doesnt change
@@ -363,7 +371,9 @@ fun LocationsUI(
                     )
                 } else {
                     LazyColumn {
-                        val x = viewModel.city_resp.value
+                        val x = searchResults
+//                        val x = viewModel.city_resp.value
+                        Log.i("Cities from ui", "LocationsUI: $x")
                         items(x) { result ->
                             Text(
                                 text = "${result.name}, ${result.country}",
@@ -372,6 +382,7 @@ fun LocationsUI(
                                     .clickable {
                                         defaultLocation = LatLng(result.lat, result.lon)
                                         latLong = LatLng(result.lat, result.lon)
+
                                         searchQuery = "${result.name}, ${result.country}"
                                         active = false
                                     }
@@ -389,7 +400,9 @@ fun LocationsUI(
                 .fillMaxSize()
                 .weight(1f),
             cameraPositionState = cameraPositionState,
-            onMapClick = { loc -> latLong = loc }
+            onMapClick = { loc -> latLong = loc
+                Log.i("Locatiom from ui", "LocationsUI: selected city is $latLong")
+            }
         ) {
             Marker(
                 state = MarkerState(position = latLong),

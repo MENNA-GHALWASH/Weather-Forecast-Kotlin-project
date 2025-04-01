@@ -13,9 +13,11 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class StartScreeViewModel(private val repo: StartScreenRepo) : ViewModel() {
 
@@ -33,21 +35,37 @@ class StartScreeViewModel(private val repo: StartScreenRepo) : ViewModel() {
                 1000
             )
         } else {
-            // Call getCurrentLoc() ONLY if permission is granted
-            if (repo.checkLocPermission()) {
-                repo.getCurrentLoc().onEach { location ->
-                    repo.locationstate.value = location
-                }.launchIn(viewModelScope) // Make sure the Flow is collected
-            } else {
-                Log.e("Location", "Permission was not granted, cannot fetch location")
+            // Delay to ensure permissions are fully processed
+            viewModelScope.launch {
+                delay(15000) // Add slight delay to avoid race condition
+
+                if (repo.checkLocPermission()) {
+                    repo.getCurrentLoc().onEach { location ->
+                        repo.locationstate.value = location
+                    }.launchIn(viewModelScope)
+                } else {
+                    Log.e("Location", "Permission was not granted after delay, cannot fetch location")
+                }
             }
         }
     }
 
+
     fun isPermissionEnabled(activity: Activity): Boolean {
-        return ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val fineLocation = ActivityCompat.checkSelfPermission(
+            activity, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val coarseLocation = ActivityCompat.checkSelfPermission(
+            activity, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val result = fineLocation || coarseLocation
+        Log.d("PermissionFix", "Permission enabled status: $result")
+
+        return result
     }
+
 
 }
 

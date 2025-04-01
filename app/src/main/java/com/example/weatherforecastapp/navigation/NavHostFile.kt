@@ -28,6 +28,7 @@ import com.example.weatherforecastapp.favourites.model.FavouritesRepo
 import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
 import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModelFactory
 import com.example.weatherforecastapp.notifications_and_Alerts.ui.WeatherAlertsUI
+import com.example.weatherforecastapp.repository.WeatherAlertRepository
 //import com.example.weatherforecastapp.favourites.model.FavouritesDAO
 //import com.example.weatherforecastapp.favourites.model.FavouritesDAOImpl
 //import com.example.weatherforecastapp.favourites.model.FavouritesRepo
@@ -38,9 +39,11 @@ import com.example.weatherforecastapp.selecting_location.get_location_with_map.u
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModel
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModelFactory
 import com.example.weatherforecastapp.settings.ui.SettingsUI
+import com.example.weatherforecastapp.settings.viewmodel.SettingsViewModel
 import com.example.weatherforecastapp.start_screen.model.StartScreenRepo
 import com.example.weatherforecastapp.start_screen.viewmodel.StartScreeViewModel
 import com.example.weatherforecastapp.start_screen.viewmodel.StartScreenViewModelFactory
+import com.example.weatherforecastapp.viewmodel.WeatherAlertViewModel
 import com.google.gson.Gson
 
 @Composable
@@ -87,7 +90,8 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                                 Log.e("weather", "start to weatherscreen: response is $weatherResp", )
                             }
                             else{
-                                navController.navigate(ScreenRoute.WeatherScreen(Gson().toJson(weatherResp)))
+                                navController.navigate(ScreenRoute.WeatherScreen(Gson().toJson(weatherResp),"")) //should be our current city
+                                //in this case we will create a function that takes latlong and gets the city name
                                 Log.i("weather", "start to weatherscreen: response is $weatherResp", )
 
                             }
@@ -101,9 +105,10 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
             composable<ScreenRoute.WeatherScreen> { backStackEntry ->
                 val weatherScreen = backStackEntry.toRoute<ScreenRoute.WeatherScreen>()
 
-                currentScreenRoute.value = ScreenRoute.WeatherScreen("")
+                //currentScreenRoute.value = ScreenRoute.WeatherScreen("",weatherScreen.city)
+                currentScreenRoute.value = ScreenRoute.WeatherScreen(weatherScreen.weatherJson,weatherScreen.city)
 
-                WeatherUI(weatherScreen.weather)
+                WeatherUI(weatherScreen.weather,weatherScreen.city)
             }
 
             composable<ScreenRoute.LocationScreen> {backStackEntry->
@@ -128,10 +133,10 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
 
                 LocationsUI(
                     viewModel = viewModel,
-                    goToWeather = { current,flag ->
+                    goToWeather = { current,flag,city ->
                         if(!flag){ //not from fav screen
                             val gson = Gson()
-                            navController.navigate(ScreenRoute.WeatherScreen(gson.toJson(current)))
+                            navController.navigate(ScreenRoute.WeatherScreen(gson.toJson(current),/*String country name*/city))
                         }
                         else{
                             //navController.popBackStack()
@@ -163,21 +168,24 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
 
             composable<ScreenRoute.NotificationsScreen> {
 
-                //repo
-                //factory
-//                WeatherAlertsUI(
+                val repo = WeatherAlertRepository()
+                val vm = WeatherAlertViewModel(repo)
+
+//                repo
+//                factory
+                WeatherAlertsUI(vm
 //                   factory
-//                )
+                )
             }
 
             composable<ScreenRoute.SettingsScreen>{
 
-                //repo
-                //factory
-
-//                SettingsUI(
-//                   factory
-//                )
+               // repo
+               // factory
+                val vm = SettingsViewModel()
+                SettingsUI( vm
+                 //  factory
+                )
             }
         }
     }

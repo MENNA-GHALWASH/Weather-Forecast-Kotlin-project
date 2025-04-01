@@ -12,3 +12,5 @@ enum class AlertType {
     NOTIFICATION,
     ALARM
 }
+
+

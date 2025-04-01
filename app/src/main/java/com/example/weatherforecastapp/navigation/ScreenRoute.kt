@@ -26,7 +26,7 @@ sealed class ScreenRoute(){
     data class LocationScreen(val fromFav:Boolean=false): ScreenRoute()
 
     @Serializable
-    data class WeatherScreen(val weatherJson: String) : ScreenRoute() {
+    data class WeatherScreen(val weatherJson: String,val city:String) : ScreenRoute() {
         val weather: WeatherResponse
             get() = Gson().fromJson(weatherJson, WeatherResponse::class.java)
     }
@@ -60,7 +60,7 @@ class NavBarHelper(val route: ScreenRoute, val icon: ImageVector?, val title: St
     companion object {
         val Routes = listOf<NavBarHelper>(
             NavBarHelper(ScreenRoute.LocationScreen(), Icons.Default.LocationOn, "Location"),
-            NavBarHelper(ScreenRoute.WeatherScreen(""), Icons.Default.Home, "Weather"),
+            NavBarHelper(ScreenRoute.WeatherScreen("",""/*last visited city*/), Icons.Default.Home, "Weather"),
             NavBarHelper(ScreenRoute.FavouritesScreen, Icons.Default.Star, "Favorites"),
             NavBarHelper(ScreenRoute.NotificationsScreen, Icons.Default.Notifications, "Notify"),
             NavBarHelper(ScreenRoute.SettingsScreen, Icons.Default.Settings, "Settings")

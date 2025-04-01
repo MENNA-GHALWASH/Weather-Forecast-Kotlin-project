@@ -31,6 +31,9 @@ import androidx.compose.material3.Text
 
 
 import android.app.Activity
+import android.devicelock.DeviceId
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -73,23 +76,35 @@ class MainActivity : ComponentActivity() {
             viewmodel.getLocationAndPermission(this)
         }
     }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray,
         deviceId: Int
     ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId)
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults,deviceId)
+
+        Log.d("PermissionFix", "Request Code: $requestCode")
+        Log.d("PermissionFix", "Grant Results: ${grantResults.joinToString()}")
 
         if (requestCode == REQUEST_LOCATION_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                viewmodel.getLocationAndPermission(this)
+                Log.d("PermissionFix", "Permission granted! Fetching location...")
+
+                // 🌟 Add a small delay before checking permission again
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (viewmodel.isPermissionEnabled(this)) {
+                        viewmodel.getLocationAndPermission(this)
+                    } else {
+                        Log.e("PermissionFix", "Permission check failed even after grant!")
+                    }
+                }, 500)  // Give Android 500ms to update the permission state
             } else {
                 Toast.makeText(this, "Location permission denied!", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
 }
 
 @Composable
@@ -163,33 +178,23 @@ fun MainScreen(
             //why is launchedeffect outside the button? what is it?
 
             Button(
-                onClick = {
-                    if (viewModel.isPermissionEnabled(activity)){
+                onClick = {if (viewModel.isPermissionEnabled(activity)) {
+                    viewModel.getLocationAndPermission(activity)
+                    if (currentLocation != null) {
+                        Toast.makeText(application, "Fetching location...", Toast.LENGTH_SHORT).show()
+                        var loc = viewModel.locationState.value
+                        loc?.let {
+                            locVM.getCurrentWeather(loc.latitude, it.longitude, apikey)
+                        }
+                        var x = locVM.current_weather.value
+                        goToLocationOrWeather(true, x)
+                        Log.i("getWeather", "MainScreen: x = $x")
+                    } else {
                         viewModel.getLocationAndPermission(activity)
-                        if (currentLocation /*==*/!= null) {
-                            Toast.makeText(application, "Fetching location...", Toast.LENGTH_SHORT).show()
-                            viewModel.getLocationAndPermission(activity)
-                            var loc = viewModel.locationState.value
-                                loc?.let {
-                                    locVM.getCurrentWeather(loc.latitude,
-                                        it.longitude,apikey)
-                                }
-                            var x = locVM.current_weather.value
-
-                            goToLocationOrWeather(true,x)
-                            Log.i("getWeather", "MainScreen: x = $x")
-
-//                            goToLocationOrWeather(true,y)
-//                            Log.i("getWeather", "MainScreen: y = $y")
-                        }
-                        else {
-                            viewModel.getLocationAndPermission(activity)
-                            Toast.makeText(application, "Location retrieved is null", Toast.LENGTH_SHORT).show()
-                            goToLocationOrWeather(false,null)
-
-                        }
+                        Toast.makeText(application, "Location retrieved is null", Toast.LENGTH_SHORT).show()
+                        goToLocationOrWeather(false, null)
                     }
-                },
+                }},
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDDB130))
             ) {
                 Text(text = "Get Started", color = Color.Black, fontSize = 30.sp)

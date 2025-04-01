@@ -34,7 +34,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun WeatherUI(weather: WeatherResponse?) {
+fun WeatherUI(weather: WeatherResponse?,city:String) {
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -43,7 +43,7 @@ fun WeatherUI(weather: WeatherResponse?) {
         if (weather != null) {
             // Location header
             Text(
-                text = weather.timezone,
+                text = city,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier

@@ -71,6 +71,7 @@ class LocationsViewModel(private val repo: LocationsRepo) : ViewModel() {
                 _isLoading.value = false
             }
         }
+        //works properly
     }
 
 
