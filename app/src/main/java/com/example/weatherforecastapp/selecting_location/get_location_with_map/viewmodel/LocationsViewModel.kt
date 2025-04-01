@@ -11,6 +11,7 @@ import com.example.weatherforecastapp.Data.CityResponse
 import com.example.weatherforecastapp.Data.DailyForecast
 import com.example.weatherforecastapp.Data.HourlyForecast
 import com.example.weatherforecastapp.Data.WeatherResponse
+import com.example.weatherforecastapp.common.model.CommonRepos
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.model.LocationsRepo
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.model.UNITS
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +40,10 @@ class LocationsViewModel(private val repo: LocationsRepo) : ViewModel() {
     private val _hourly_weather = MutableStateFlow<HourlyForecast?>(null)//not sure if this is right
     val hourly_weather:StateFlow<HourlyForecast?> get() = _hourly_weather
 ////
+    val _city_name =  MutableStateFlow<String>("")
+    val city_name: StateFlow<String> get() = _city_name
+
+    private val commonRepos = CommonRepos.getInstance()
 
 
     fun searchCities(place: String, apiKey: String) {
@@ -115,6 +120,14 @@ class LocationsViewModel(private val repo: LocationsRepo) : ViewModel() {
                 _daily_weather.value = null
             }
             //you may add finally
+        }
+
+
+        fun getCityName(lat: Double, lon: Double, apiKey: String){
+          viewModelScope.launch {
+              val rep =  commonRepos.fetchCityName(lat, lon, apiKey)
+              _city_name.value = rep
+          }
         }
     }
 

@@ -4,11 +4,9 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.example.weatherforecastapp.Data.CityResponse
 
 
-@Database(entities = [CityResponse::class], version = 1, exportSchema = false)
+@Database(entities = [FavClass::class], version = 3, exportSchema = false)
 
 abstract class FavouritesDAOImpl : RoomDatabase() {
     abstract fun getFavouritesDAO(): FavouritesDAO
@@ -23,7 +21,8 @@ abstract class FavouritesDAOImpl : RoomDatabase() {
                     context.applicationContext,
                     FavouritesDAOImpl::class.java,
                     "Favourites"
-                ).build()
+                )    .fallbackToDestructiveMigration() // 💥 WARNING: This will DELETE existing data!
+                    .build()
                 instance = INSTANCE
                 INSTANCE
             }

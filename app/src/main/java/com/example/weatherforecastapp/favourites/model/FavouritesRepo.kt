@@ -1,21 +1,20 @@
 package com.example.weatherforecastapp.favourites.model
 
-import com.example.weatherforecastapp.Data.CityResponse
 import kotlinx.coroutines.flow.Flow
 
 class FavouritesRepo(private val itemDao: FavouritesDAO) {
     //save data
     //retrieve data
     //delete data
-    fun LoadFavourites(): Flow<List<CityResponse>> {
+    fun LoadFavourites(): Flow<List<FavClass>> {
         return itemDao.getAllFavouriteCities()
     }
 
-    suspend fun addFavourite(favouriteCity: CityResponse): Long {
+    suspend fun addFavourite(favouriteCity: FavClass): Long {
         return itemDao.insertFavouriteCity(favouriteCity)
     }
 
-    suspend fun deleteFavourite(favouriteCity:CityResponse): Int {
+    suspend fun deleteFavourite(favouriteCity:FavClass): Int {
         return itemDao.deleteFavouriteCity(favouriteCity)
     }
 }

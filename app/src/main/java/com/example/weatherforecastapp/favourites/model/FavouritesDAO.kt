@@ -5,19 +5,18 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.weatherforecastapp.Data.CityResponse
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FavouritesDAO {
 
     @Query("Select * from Favourites")
-    fun getAllFavouriteCities(): Flow<List<CityResponse>>
+    fun getAllFavouriteCities(): Flow<List<FavClass>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertFavouriteCity(city: CityResponse): Long
+    suspend fun insertFavouriteCity(city: FavClass): Long
 
     @Delete
-    suspend fun deleteFavouriteCity(city: CityResponse): Int
+    suspend fun deleteFavouriteCity(city: FavClass): Int
 
 }

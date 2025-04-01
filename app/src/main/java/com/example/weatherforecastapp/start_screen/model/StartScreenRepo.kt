@@ -133,62 +133,6 @@ class StartScreenRepo(private val context: Context, private val activity: Activi
     val locationstate = MutableStateFlow<Location?>(null)
     private var locationCallback: LocationCallback? = null
 
-    /*@SuppressLint("MissingPermission")
-    fun getCurrentLoc() = callbackFlow {
-        if (!checkLocPermission()) {
-            Log.e("LocationError", "Permission NOT granted")
-            close()
-            return@callbackFlow
-        }
-
-        if (!isLocationEnabled()) {
-            Log.e("LocationError", "Location services are disabled")
-            enableLocPermission()
-            close()
-            return@callbackFlow
-        }
-
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            15000 // 15 seconds
-        ).build()
-
-        val callback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let { location ->
-                    trySend(location)
-                    Log.d("LocationUpdate", "New location: ${location.latitude}, ${location.longitude}")
-                } ?: run {
-                    Log.e("LocationUpdate", "Location result is null")
-                }
-            }
-
-            override fun onLocationAvailability(availability: LocationAvailability) {
-                Log.d("LocationUpdate", "Location availability: ${availability.isLocationAvailable}")
-            }
-        }
-        locationCallback = callback
-
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
-                trySend(location)
-            }
-        }
-
-        fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest,
-            callback,
-            Looper.getMainLooper()
-        )
-
-        awaitClose {
-            locationCallback?.let {
-                fusedLocationProviderClient.removeLocationUpdates(it)
-            }
-        }
-    }.onEach { location ->
-        locationstate.value = location
-    }*/
 
     @SuppressLint("MissingPermission")
     fun getCurrentLoc() = callbackFlow {
@@ -297,4 +241,6 @@ class StartScreenRepo(private val context: Context, private val activity: Activi
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
+
+
 }

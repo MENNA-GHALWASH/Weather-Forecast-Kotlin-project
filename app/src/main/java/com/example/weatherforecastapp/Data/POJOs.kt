@@ -42,14 +42,22 @@ data class WeatherDescription(
     val icon: String
 )
 
+data class LocationResponse(
+    val name: String,
+    val local_names: Map<String, String>?, // Nullable because not always needed
+    val lat: Double,
+    val lon: Double,
+    val country: String,
+    val state: String?
+)
+
+
 //not used in methods
-@Entity(tableName = "Favourites")
 data class CityResponse(
     val name: String = "",
     val country: String = "",
     val lat: Double = 0.0,
     val lon: Double = 0.0,
-    @PrimaryKey(autoGenerate = true) var id: Int = 0
 )
 
 

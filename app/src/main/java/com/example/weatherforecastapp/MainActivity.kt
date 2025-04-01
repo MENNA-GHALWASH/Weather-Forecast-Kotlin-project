@@ -109,12 +109,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(
-    goToLocationOrWeather: (Boolean, WeatherResponse?) -> Unit,
+    goToLocationOrWeather: (Boolean, WeatherResponse?,String) -> Unit,
     viewModel: StartScreeViewModel,
     activity: Activity,
     application:Application,
     locVM: LocationsViewModel
 ) {
+
+    val cityName by viewModel.city_name.collectAsState()
+    val weather by locVM.current_weather.collectAsState()
+
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.rainylottie))
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFF18213E), Color(0xFF923EA8)),
@@ -162,20 +166,21 @@ fun MainScreen(
             val currentLocation by viewModel.locationState.collectAsState()
 
             LaunchedEffect(currentLocation) {
-                if(currentLocation!=null){
+                if (currentLocation != null) {
                     val weather = locVM.getCurrentWeather(
                         currentLocation!!.latitude,
                         currentLocation!!.longitude,
                         apikey
                     )
-                    goToLocationOrWeather(true, locVM.current_weather.value)
-                }
-                else{
-                    //make current loc not null by retriving location
+
+                    val weatherData = locVM.current_weather.value
+                    if (weatherData != null) {
+                        viewModel.getCityName(weatherData.lat, weatherData.lon, apikey)
+                    }
+                } else {
                     viewModel.getLocationAndPermission(activity)
                 }
             }
-            //why is launchedeffect outside the button? what is it?
 
             Button(
                 onClick = {if (viewModel.isPermissionEnabled(activity)) {
@@ -186,13 +191,13 @@ fun MainScreen(
                         loc?.let {
                             locVM.getCurrentWeather(loc.latitude, it.longitude, apikey)
                         }
-                        var x = locVM.current_weather.value
-                        goToLocationOrWeather(true, x)
-                        Log.i("getWeather", "MainScreen: x = $x")
+
+                        goToLocationOrWeather(true, weather,cityName)
+                        Log.i("getWeather", "MainScreen: x = $weather")
                     } else {
                         viewModel.getLocationAndPermission(activity)
                         Toast.makeText(application, "Location retrieved is null", Toast.LENGTH_SHORT).show()
-                        goToLocationOrWeather(false, null)
+                        goToLocationOrWeather(false, weather,cityName)
                     }
                 }},
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDDB130))

@@ -30,6 +30,7 @@ class LocationsRepo {
             return response
     }
 
+    //////////
     //move to weather repo
     suspend fun getCurrentWeather(lat:Double, lon:Double, apikey:String): WeatherResponse? { //should return something
         return try {
@@ -74,6 +75,7 @@ class LocationsRepo {
             Log.e("Weather", "getWeatherOverDays: ${e.message}", )
             return null
         }
+
     }
 
     //move to weather repo: get unit and change it in settings

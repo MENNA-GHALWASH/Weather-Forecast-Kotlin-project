@@ -22,4 +22,12 @@ object RetrofitClient {
             .create(GeoCodingAPI::class.java)
     }
 
+    val reverse_geo_coding_api:ReverseGeocodingApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ReverseGeocodingApi::class.java)
+    }
+
 }

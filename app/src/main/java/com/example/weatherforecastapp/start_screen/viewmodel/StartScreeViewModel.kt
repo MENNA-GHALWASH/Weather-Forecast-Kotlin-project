@@ -13,7 +13,9 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.example.weatherforecastapp.common.model.CommonRepos
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -21,8 +23,12 @@ import kotlinx.coroutines.launch
 
 class StartScreeViewModel(private val repo: StartScreenRepo) : ViewModel() {
 
+    private val commonRepos = CommonRepos.getInstance()
+
     val locationState: StateFlow<Location?> = repo.locationstate
 
+    val _city_name =  MutableStateFlow<String>("")
+    val city_name: StateFlow<String> get() = _city_name
 
     fun getLocationAndPermission(activity: Activity) {
         if (!isPermissionEnabled(activity)) {
@@ -64,6 +70,11 @@ class StartScreeViewModel(private val repo: StartScreenRepo) : ViewModel() {
         Log.d("PermissionFix", "Permission enabled status: $result")
 
         return result
+    }
+
+    suspend fun getCityName(lat: Double, lon: Double, apiKey: String){
+        val rep =  commonRepos.fetchCityName(lat, lon, apiKey)
+        _city_name.value = rep
     }
 
 
