@@ -50,7 +50,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun LocationsUI(
     viewModel: LocationsViewModel,
-    goToWeather: (WeatherResponse?,String) -> Unit ,
+    goToWeather: (/*WeatherResponse?*/lat:Double,lon:Double,String) -> Unit ,
     favouriteViewModel: FavouritesViewModel,
 //    fromFav: Boolean
 
@@ -62,7 +62,7 @@ fun LocationsUI(
 
     val searchResults by viewModel.city_resp.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val currentWeather by viewModel.current_weather.collectAsState()
+   // val currentWeather by viewModel.current_weather.collectAsState()
 
     var defaultLocation by remember { mutableStateOf(LatLng(30.0444, 31.2357)) }
     val cameraPositionState = rememberCameraPositionState {
@@ -79,11 +79,11 @@ fun LocationsUI(
         }
     }
 
-    LaunchedEffect(latLong) {
-        if ((latLong.latitude!=0.0)&&(latLong.longitude!=0.0)) {
-            viewModel.getCurrentWeather(currentLatLong.latitude, currentLatLong.longitude, apiKey)
-        }
-    }
+//    LaunchedEffect(latLong) {
+//        if ((latLong.latitude!=0.0)&&(latLong.longitude!=0.0)) {
+//            viewModel.getCurrentWeather(currentLatLong.latitude, currentLatLong.longitude, apiKey)
+//        }
+//    }
 
     // Animate camera when location updates
     LaunchedEffect(defaultLocation) {
@@ -105,10 +105,9 @@ fun LocationsUI(
                 //if (fromFav == false) {
                     if (currentLatLong.latitude != 0.0 && currentLatLong.longitude != 0.0) {
                       //  viewModel.getCurrentWeather(currentLatLong.latitude, currentLatLong.longitude, apiKey) //changes the value of viewmodel's current weather
-                        //
-                        goToWeather(currentWeather/*send the search query*/,searchQuery)
-
+                       // goToWeather(currentWeather/*send the search query*/,searchQuery)
                         //Log.i("fromFav", "LocationsUI: fromFav is $fromFav")
+                        goToWeather(currentLatLong.latitude,currentLatLong.longitude,searchQuery) // should take double lat lon and city name
                     }
                     active = false
 //                } else {

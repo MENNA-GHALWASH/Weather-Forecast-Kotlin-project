@@ -22,25 +22,21 @@ fun SettingsUI(viewModel: SettingsViewModel) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Location Option
         LocationOptionPicker(
             selectedOption = settingsState.locationOption,
             onOptionSelected = viewModel::updateLocationOption
         )
 
-        // Temperature Unit
         TemperatureUnitPicker(
             selectedUnit = settingsState.temperatureUnit,
             onUnitSelected = viewModel::updateTemperatureUnit
         )
 
-        // Wind Speed Unit
         WindSpeedUnitPicker(
             selectedUnit = settingsState.windSpeedUnit,
             onUnitSelected = viewModel::updateWindSpeedUnit
         )
 
-        // Language
         LanguagePicker(
             selectedLanguage = settingsState.language,
             onLanguageSelected = viewModel::updateLanguage

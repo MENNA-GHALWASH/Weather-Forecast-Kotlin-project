@@ -2,7 +2,9 @@
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -20,6 +22,11 @@ import com.example.weatherforecastapp.favourites.model.FavouritesDAOImpl
 import com.example.weatherforecastapp.favourites.model.FavouritesRepo
 import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
 import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModelFactory
+import com.example.weatherforecastapp.home.daily_forecast.model.WeatherDao
+import com.example.weatherforecastapp.home.daily_forecast.model.WeatherDatabase
+import com.example.weatherforecastapp.home.daily_forecast.model.WeatherRepo
+import com.example.weatherforecastapp.home.daily_forecast.viewmodel.WeatherViewModel
+import com.example.weatherforecastapp.home.daily_forecast.viewmodel.WeatherViewModelFactory
 import com.example.weatherforecastapp.notifications_and_Alerts.ui.WeatherAlertsUI
 import com.example.weatherforecastapp.repository.WeatherAlertRepository
 //import com.example.weatherforecastapp.favourites.model.FavouritesDAO
@@ -39,6 +46,7 @@ import com.example.weatherforecastapp.start_screen.viewmodel.StartScreenViewMode
 import com.example.weatherforecastapp.viewmodel.WeatherAlertViewModel
 import com.google.gson.Gson
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun setNavHost(application: Application,context: Context,activity:Activity) {
     val navController = rememberNavController()
@@ -67,9 +75,10 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                     factory = StartScreenViewModelFactory(repo)
                 )
 
-                val locrepo = remember { LocationsRepo() }
-                val locviewModel: LocationsViewModel = viewModel(
-                    factory = LocationsViewModelFactory(locrepo)
+                var dao = WeatherDatabase.getDatabase(context).weatherDao()
+                val locrepo = remember { WeatherRepo(dao) }
+                val locviewModel: WeatherViewModel = viewModel(
+                    factory = WeatherViewModelFactory(locrepo)
                 )
 
                 currentScreenRoute.value = ScreenRoute.StartScreen
@@ -81,22 +90,29 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                                 Log.e("weather", "start to weatherscreen: response is $weatherResp", )
                             }
                             else{
-                                navController.navigate(ScreenRoute.WeatherScreen(Gson().toJson(weatherResp),cityname))
+                                navController.navigate(ScreenRoute.WeatherScreen(weatherResp.lat,weatherResp.lon,cityname))
                             //should pass the city retrieved from fetch cities
                             }
                         }
                         else
                             navController.navigate(ScreenRoute.LocationScreen())
-                    },viewModel,activity,application,locviewModel
+                    },viewModel,activity,application,locviewModel,context
                 )
             }
 
             composable<ScreenRoute.WeatherScreen> { backStackEntry ->
                 val weatherScreen = backStackEntry.toRoute<ScreenRoute.WeatherScreen>()
                 //extracts items from weatherscreen data class
-                currentScreenRoute.value = ScreenRoute.WeatherScreen(weatherScreen.weatherJson,weatherScreen.city)
+                currentScreenRoute.value = ScreenRoute.WeatherScreen(weatherScreen.lat,weatherScreen.lon,weatherScreen.city)
 
-                WeatherUI(weatherScreen.weather,weatherScreen.city)
+                var dao = WeatherDatabase.getDatabase(context).weatherDao()
+
+                val repo = remember { WeatherRepo(dao) }
+                val viewModel: WeatherViewModel = viewModel(
+                    factory = WeatherViewModelFactory(repo)
+                )
+
+                WeatherUI(weatherScreen.lat,weatherScreen.lon,weatherScreen.city,viewModel)
             }
 
             composable<ScreenRoute.LocationScreen> {backStackEntry->
@@ -127,21 +143,22 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                 //get rid of flag param in loc ui
                 LocationsUI(
                     viewModel = viewModel,
-                    goToWeather = { current,city ->
-                        val gson = Gson()
+                    goToWeather = { lat,lon,city ->
+                       // val gson = Gson()
 
                         if(!flag){ //not from fav screen
-                            navController.navigate(ScreenRoute.WeatherScreen(gson.toJson(current),/*String country name*/city))
+                           // navController.navigate(ScreenRoute.WeatherScreen(gson.toJson(current),/*String country name*/city))
+                            navController.navigate(ScreenRoute.WeatherScreen(lat,lon,city))
                         }
                         else{
                             //navController.popBackStack()
 
                             //pass the weather response and the city to next screen
-                            if (current != null) {
-                                favviewModel.addToFavourites(FavClass(current.lat, current.lon, city))
-                                Log.i("Fav", "Added to favourites: ${FavClass(current.lat, current.lon, city)}")
+                            //if (current != null) { // current was a weather response
+                                favviewModel.addToFavourites(FavClass(lat,lon, city))
+                                Log.i("Fav", "Added to favourites: ${FavClass(lat,lon, city)}")
 
-                            }
+                            //}
 
 
                             navController.navigate(ScreenRoute.FavouritesScreen(city))
@@ -174,7 +191,10 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                     goToLocationsForFavourites = { flag ->
                         navController.navigate(ScreenRoute.LocationScreen(flag))
                     },
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    goToWeather = {lat,lon ->
+                        navController.navigate(ScreenRoute.WeatherScreen(lat, lon, city)) // i am not sure
+                    }
                 )
             }
 
@@ -183,9 +203,13 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                 val repo = WeatherAlertRepository()
                 val vm = WeatherAlertViewModel(repo)
 
+                val locrepo = LocationsRepo()
+                val locviewmodel: LocationsViewModel = viewModel(
+                    factory = LocationsViewModelFactory(locrepo)
+                )
 //                repo
 //                factory
-                WeatherAlertsUI(vm
+                WeatherAlertsUI(vm, locviewmodel
 //                   factory
                 )
             }

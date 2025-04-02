@@ -32,60 +32,60 @@ class LocationsRepo {
 
     //////////
     //move to weather repo
-    suspend fun getCurrentWeather(lat:Double, lon:Double, apikey:String): WeatherResponse? { //should return something
-        return try {
-            val weatherAPI = RetrofitClient.one_call_api
-             weatherAPI.getCurrentWeather(lat,lon,"current",apikey)
-
-        } catch (e:Exception){
-            val empty: WeatherResponse? = null
-            return empty
-        }
-    }
-
-    //move to weather repo
-    suspend fun getWeatherbyHour(lat:Double, lon:Double, apikey:String): HourlyForecast? { //should return something
-        try {
-            val weatherAPI = RetrofitClient.one_call_api
-
-
-            if (units==UNITS.STANDARD){
-                return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey,"standard")
-            }
-            else if (units==UNITS.IMPERIAL){
-                return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey,"imperial")
-            }
-            else {
-                return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey)
-            }
-
-        } catch (e:Exception){
-            Log.e("Weather", "getWeatherbyHour: ${e.message}", )
-            return null
-        }
-    }
-
-    //move to weather repo
-    suspend fun getWeatherOverDays(lat:Double, lon:Double, apikey:String): DailyForecast? {
-        try {
-            val weatherAPI = RetrofitClient.one_call_api
-            return weatherAPI.getDailyWeather(lat,lon,"daily",apikey)
-
-        } catch (e:Exception){
-            Log.e("Weather", "getWeatherOverDays: ${e.message}", )
-            return null
-        }
-
-    }
+//    suspend fun getCurrentWeather(lat:Double, lon:Double, apikey:String): WeatherResponse? { //should return something
+//        return try {
+//            val weatherAPI = RetrofitClient.one_call_api
+//             weatherAPI.getCurrentWeather(lat,lon,"current",apikey)
+//
+//        } catch (e:Exception){
+//            val empty: WeatherResponse? = null
+//            return empty
+//        }
+//    }
+//
+//    //move to weather repo
+//    suspend fun getWeatherbyHour(lat:Double, lon:Double, apikey:String): HourlyForecast? { //should return something
+//        try {
+//            val weatherAPI = RetrofitClient.one_call_api
+//
+//
+//            if (units==UNITS.STANDARD){
+//                return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey,"standard")
+//            }
+//            else if (units==UNITS.IMPERIAL){
+//                return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey,"imperial")
+//            }
+//            else {
+//                return  weatherAPI.getHourlyWeather(lat,lon,"hourly",apikey)
+//            }
+//
+//        } catch (e:Exception){
+//            Log.e("Weather", "getWeatherbyHour: ${e.message}", )
+//            return null
+//        }
+//    }
+//
+//    //move to weather repo
+//    suspend fun getWeatherOverDays(lat:Double, lon:Double, apikey:String): DailyForecast? {
+//        try {
+//            val weatherAPI = RetrofitClient.one_call_api
+//            return weatherAPI.getDailyWeather(lat,lon,"daily",apikey)
+//
+//        } catch (e:Exception){
+//            Log.e("Weather", "getWeatherOverDays: ${e.message}", )
+//            return null
+//        }
+//
+//    }
 
     //move to weather repo: get unit and change it in settings
-    fun getUnit():String{
-        when(units){
-            UNITS.STANDARD ->  return "K"
-            UNITS.METRIC -> return "C"
-            UNITS.IMPERIAL -> return "F"
-        }
-    }
+//    fun getUnit():String{
+//        when(units){
+//            UNITS.STANDARD ->  return "K"
+//            UNITS.METRIC -> return "C"
+//            UNITS.IMPERIAL -> return "F"
+//        }
+//    }
 
 
 }

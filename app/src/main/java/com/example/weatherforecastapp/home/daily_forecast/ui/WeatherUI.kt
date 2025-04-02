@@ -18,9 +18,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,18 +33,32 @@ import coil.compose.rememberImagePainter
 import com.example.weatherforecastapp.Data.DailyForecast
 import com.example.weatherforecastapp.Data.HourlyForecast
 import com.example.weatherforecastapp.Data.WeatherResponse
+import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.home.daily_forecast.viewmodel.WeatherViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun WeatherUI(weather: WeatherResponse?,city:String) {
+fun WeatherUI(lat:Double, lon:Double, city:String, viewModel: WeatherViewModel) {
+    val currentWeather by viewModel.current_weather.collectAsState()
+
+    val apikey = stringResource(R.string.geocoding_api)
+
+    LaunchedEffect(lat, lon) {
+        if (lat != 0.0 && lon != 0.0) { // Only fetch if valid coordinates
+            viewModel.getCurrentWeather(lat, lon, apikey)
+//            viewModel.getHourlyWeather(lat, lon, apikey)
+//            viewModel.getDailyWeather(lat, lon, apikey)
+        }
+    }
+
     Column(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth()
     ) {
-        if (weather != null) {
+        if (currentWeather!=null) {
             // Location header
             Text(
                 text = city,
@@ -52,43 +70,45 @@ fun WeatherUI(weather: WeatherResponse?,city:String) {
                 textAlign = TextAlign.Center
             )
 
-            // Current temperature
+            // Current temperature - safely handle null values
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 16.dp)
             ) {
                 Text(
-                    text = "${weather.hourly[0].temp.toInt()}°",
+                    text = "${currentWeather?.hourly?.get(0)?.temp?.toInt()}°",
                     style = MaterialTheme.typography.displayLarge,
                     fontWeight = FontWeight.ExtraBold,
                     modifier = Modifier.weight(1f)
                 )
 
-                // Weather icon
-                Image(
-                    painter = rememberImagePainter("https://openweathermap.org/img/wn/${weather.hourly[0].weather[0].icon}@4x.png"),
-                    contentDescription = weather.hourly[0].weather[0].description,
-                    modifier = Modifier.size(100.dp)
-                )
+                // Weather icon - safely handle null values
+                currentWeather?.hourly?.get(0)?.weather?.get(0)?.let { weather ->
+                    Image(
+                        painter = rememberImagePainter("https://openweathermap.org/img/wn/${weather.icon}@4x.png"),
+                        contentDescription = weather.description,
+                        modifier = Modifier.size(100.dp)
+                    )
+                }
             }
 
-            // Feels like
+            // Feels like - safely handle null values
             Text(
-                text = "Feels like ${weather.hourly[0].feelsLike.toInt()}°",
+                text = "Feels like ${currentWeather?.hourly?.get(0)?.feelsLike?.toInt()}°",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Description
+            // Description - safely handle null values
             Text(
-                text = weather.hourly[0].weather[0].description.replaceFirstChar { it.uppercase() },
+                text = currentWeather?.hourly?.get(0)?.weather?.get(0)?.description?.replaceFirstChar { it.uppercase() } ?: "",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Hourly forecast
+            // Hourly forecast - safely handle null values
             Text(
                 text = "Hourly Forecast",
                 style = MaterialTheme.typography.titleMedium,
@@ -96,16 +116,18 @@ fun WeatherUI(weather: WeatherResponse?,city:String) {
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(bottom = 16.dp)
-            ) {
-                items(weather.hourly.take(24)) { hourly -> // Limit to 24 hours for better UX
-                    HourlyForecastCard(hourly)
+            currentWeather?.hourly?.let { hourlyList ->
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    items(hourlyList.take(24)) { hourly ->
+                        HourlyForecastCard(hourly)
+                    }
                 }
             }
 
-            // Daily forecast
+            // Daily forecast - safely handle null values
             Text(
                 text = "Daily Forecast",
                 style = MaterialTheme.typography.titleMedium,
@@ -113,12 +135,14 @@ fun WeatherUI(weather: WeatherResponse?,city:String) {
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(bottom = 16.dp)
-            ) {
-                items(weather.daily.take(5)) { daily -> // Limit to 5 days for better UX
-                    DailyForecastCard(daily)
+            currentWeather?.daily?.let { dailyList ->
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    items(dailyList.take(5)) { daily ->
+                        DailyForecastCard(daily)
+                    }
                 }
             }
         }
@@ -240,7 +264,6 @@ fun DailyForecastCard(daily: DailyForecast) {
     }
 }
 
-// Add these extension functions for date formatting
 fun Long.toWeekday(): String {
     val date = Date(this * 1000) // Convert seconds to milliseconds
     val formatter = SimpleDateFormat("EEEE", Locale.getDefault())

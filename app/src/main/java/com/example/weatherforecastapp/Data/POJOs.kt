@@ -3,31 +3,35 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import androidx.room.TypeConverters
 
+@Entity(tableName = "weather_response")
 data class WeatherResponse(
-    val lat: Double,
+    @PrimaryKey val lat: Double,
     val lon: Double,
     val timezone: String,
-    val hourly: List<HourlyForecast>,
-    val daily: List<DailyForecast>
+    @TypeConverters(Converters::class) val hourly: List<HourlyForecast>,
+    @TypeConverters(Converters::class) val daily: List<DailyForecast>
 )
 
+@Entity(tableName = "hourly_forecast")
 data class HourlyForecast(
-    val dt: Long,
+    @PrimaryKey val dt: Long,
     val temp: Double,
     @SerializedName("feels_like") val feelsLike: Double,
     val pressure: Int,
     val humidity: Int,
-    val weather: List<WeatherDescription>
+    @TypeConverters(Converters::class) val weather: List<WeatherDescription>
 )
 
+@Entity(tableName = "daily_forecast")
 data class DailyForecast(
-    val dt: Long,
-    val temp: Temperature,
-    @SerializedName("feels_like") val feelsLike: Temperature,
+    @PrimaryKey val dt: Long,
+    @TypeConverters(Converters::class) val temp: Temperature,
+    @SerializedName("feels_like") @TypeConverters(Converters::class) val feelsLike: Temperature,
     val pressure: Int,
     val humidity: Int,
-    val weather: List<WeatherDescription>
+    @TypeConverters(Converters::class) val weather: List<WeatherDescription>
 )
 
 data class Temperature(
@@ -41,7 +45,6 @@ data class WeatherDescription(
     val description: String,
     val icon: String
 )
-
 data class LocationResponse(
     val name: String,
     val local_names: Map<String, String>?, // Nullable because not always needed

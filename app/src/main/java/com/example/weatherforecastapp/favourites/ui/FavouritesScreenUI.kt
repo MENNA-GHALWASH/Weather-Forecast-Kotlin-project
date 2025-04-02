@@ -16,8 +16,8 @@ import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
 @Composable
 fun FavScreenUI(
     goToLocationsForFavourites: (Boolean) -> Unit,
-    viewModel: FavouritesViewModel
-    //go to weather
+    viewModel: FavouritesViewModel,
+    goToWeather: (Double, Double) -> Unit
 ) {
     val favourites by viewModel.allFavourites.collectAsState(initial = emptyList())
 
@@ -51,7 +51,7 @@ fun FavScreenUI(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(favourites) { favItem ->
-                        FavItemCard(favItem)
+                        FavItemCard(favItem,goToWeather)
                     }
                 }
             }
@@ -60,22 +60,22 @@ fun FavScreenUI(
 }
 
 @Composable
-fun FavItemCard(fav: FavClass) {
+fun FavItemCard(fav: FavClass,goToWeather:(Double,Double)->Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                //use lat long to go to weather and update it's values
+                goToWeather(fav.lat,fav.lon)
             },
-        elevation = CardDefaults.elevatedCardElevation(4.dp) // ✅ FIXED elevation
+        elevation = CardDefaults.elevatedCardElevation(4.dp) //
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
                 text = fav.city,
-                style = MaterialTheme.typography.titleLarge // ✅ FIXED typography
+                style = MaterialTheme.typography.titleLarge //
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Lat: ${fav.lat}, Lon: ${fav.lon}")

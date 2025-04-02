@@ -10,10 +10,12 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.core.app.ActivityCompat
 import com.example.weatherforecastapp.start_screen.model.StartScreenRepo
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.common.model.CommonRepos
+import com.example.weatherforecastapp.start_screen.model.LocationPrefs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -72,9 +74,11 @@ class StartScreeViewModel(private val repo: StartScreenRepo) : ViewModel() {
         return result
     }
 
-    suspend fun getCityName(lat: Double, lon: Double, apiKey: String){
+    suspend fun getCityName(lat: Double, lon: Double, apiKey: String,context: Context){
         val rep =  commonRepos.fetchCityName(lat, lon, apiKey)
         _city_name.value = rep
+        LocationPrefs.saveCityName(context, rep) // will need context for here
+
     }
 
 

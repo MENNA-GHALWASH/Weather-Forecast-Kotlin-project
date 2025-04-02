@@ -1,4 +1,5 @@
 
+import android.content.Context
 import android.location.Location
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -26,9 +27,9 @@ sealed class ScreenRoute(){
     data class LocationScreen(val fromFav:Boolean=false): ScreenRoute()
 
     @Serializable
-    data class WeatherScreen(val weatherJson: String,val city:String,val fromFav: Boolean = false) : ScreenRoute() {
-        val weather: WeatherResponse
-            get() = Gson().fromJson(weatherJson, WeatherResponse::class.java)
+    data class WeatherScreen(val lat:Double,val lon:Double,val city:String,val fromFav: Boolean = false) : ScreenRoute() {
+//        val weather: WeatherResponse
+//            get() = Gson().fromJson(weatherJson, WeatherResponse::class.java)
     }
 
     @Serializable
@@ -50,11 +51,11 @@ sealed class ScreenRoute(){
     @Serializable
     object SettingsScreen: ScreenRoute()
 
-    override fun toString(): String {
+    override fun toString(): String { // i feel like this needs to change
         return when (this) {
             is StartScreen -> "StartScreen"
             is LocationScreen -> "LocationScreen/${fromFav}"
-            is WeatherScreen -> "WeatherScreen/${weatherJson}"
+            is WeatherScreen -> "WeatherScreen"
             is NotificationsScreen -> "NotificationsScreen"
             is FavouritesScreen -> "FavouritesScreen"
             is SettingsScreen -> "SettingsScreen"
@@ -69,10 +70,8 @@ class NavBarHelper(val route: ScreenRoute, val icon: ImageVector?, val title: St
     companion object {
         val Routes = listOf<NavBarHelper>(
             NavBarHelper(ScreenRoute.LocationScreen(), Icons.Default.LocationOn, "Location"),
-
             //this should be my current location
-            NavBarHelper(ScreenRoute.WeatherScreen("",""/*last visited city*/), Icons.Default.Home, "Weather"),
-
+            NavBarHelper(ScreenRoute.WeatherScreen(0.0,0.0, ""), Icons.Default.Home, "Weather"),
             NavBarHelper(ScreenRoute.FavouritesScreen(""), Icons.Default.Star, "Favorites"),
             NavBarHelper(ScreenRoute.NotificationsScreen, Icons.Default.Notifications, "Notify"),
             NavBarHelper(ScreenRoute.SettingsScreen, Icons.Default.Settings, "Settings")
@@ -94,4 +93,5 @@ class NavBarHelper(val route: ScreenRoute, val icon: ImageVector?, val title: St
 //the nav bar will also have a notifications bell which will direct to us the notifications screen
 //in the notifications screen you get to pick locations for the place you want to know the weather
 //in the notifications screen, you can choose the date and time for receiving the notification
+
 

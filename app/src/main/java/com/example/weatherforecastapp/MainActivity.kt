@@ -31,10 +31,13 @@ import androidx.compose.material3.Text
 
 
 import android.app.Activity
+import android.content.Context
 import android.devicelock.DeviceId
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -48,11 +51,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.airbnb.lottie.compose.*
-import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.home.daily_forecast.viewmodel.WeatherViewModel
 import com.example.weatherforecastapp.start_screen.viewmodel.StartScreeViewModel
-
 
 
 class MainActivity : ComponentActivity() {
@@ -62,9 +63,11 @@ class MainActivity : ComponentActivity() {
     private val repo by lazy { StartScreenRepo(this,this) }
     private val viewmodel by lazy { StartScreeViewModel(repo) }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             setNavHost(this.application,this,this)
         }
@@ -113,7 +116,8 @@ fun MainScreen(
     viewModel: StartScreeViewModel,
     activity: Activity,
     application:Application,
-    locVM: LocationsViewModel
+    locVM: WeatherViewModel,
+    context:Context
 ) {
 
     val cityName by viewModel.city_name.collectAsState()
@@ -175,7 +179,7 @@ fun MainScreen(
 
                     val weatherData = locVM.current_weather.value
                     if (weatherData != null) {
-                        viewModel.getCityName(weatherData.lat, weatherData.lon, apikey)
+                        viewModel.getCityName(weatherData.lat, weatherData.lon, apikey,context)
                     }
                 } else {
                     viewModel.getLocationAndPermission(activity)
@@ -190,7 +194,7 @@ fun MainScreen(
                         var loc = viewModel.locationState.value
                         loc?.let {
                             locVM.getCurrentWeather(loc.latitude, it.longitude, apikey)
-                        }
+                        } //this variable location needs to be stored in shared preferences,
 
                         goToLocationOrWeather(true, weather,cityName)
                         Log.i("getWeather", "MainScreen: x = $weather")

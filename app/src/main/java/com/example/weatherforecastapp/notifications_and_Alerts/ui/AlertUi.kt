@@ -1,111 +1,237 @@
 package com.example.weatherforecastapp.notifications_and_Alerts.ui
 
-import com.example.weatherforecastapp.notifications_and_Alerts.model.AlertType
-import com.example.weatherforecastapp.notifications_and_Alerts.model.WeatherAlert
-
-
+import android.app.Application
+import android.app.TimePickerDialog
+import android.content.Context
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.weatherforecastapp.notifications_and_Alerts.model.AlertType
+import com.example.weatherforecastapp.notifications_and_Alerts.model.WeatherAlert
+import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.notifications_and_Alerts.model.AlertScheduler
 import com.example.weatherforecastapp.viewmodel.WeatherAlertViewModel
+import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModel
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.Calendar
 
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WeatherAlertsUI(viewModel: WeatherAlertViewModel) {
-    val alerts by viewModel.alerts.collectAsState()
+fun WeatherAlertsUI(
+    weatherAlertViewModel: WeatherAlertViewModel,
+    locationsViewModel: LocationsViewModel,
+) {
+    val context = LocalContext.current
+    val apiKey = stringResource(R.string.geocoding_api)
 
-    var duration by remember { mutableStateOf(3600000L) } // Default 1 hour
-    var alertType by remember { mutableStateOf(AlertType.NOTIFICATION) }
+    var searchQuery by remember { mutableStateOf("") }
+    var active by remember { mutableStateOf(false) }
+    val searchResults by locationsViewModel.city_resp.collectAsState()
+    val isLoading by locationsViewModel.isLoading.collectAsState()
+
+    val selectedDate = remember { mutableStateOf(LocalDate.now()) }
+    val selectedTime = remember { mutableStateOf(LocalTime.now()) }
+    val alarmType = remember { mutableStateOf("Notification") }
+    val duration = remember { mutableStateOf(10) } // Duration in minutes
+    var latLong by remember { mutableStateOf(LatLng(0.0, 0.0)) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // Add Weather Alert Button
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    viewModel.addAlert(duration, alertType)
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+    // Fetch cities when search query changes
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isNotEmpty()) {
+            locationsViewModel.getCities(searchQuery, apiKey)
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Add Weather Alert")
-        }
+            // Outlined Search Bar
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = { query -> searchQuery = query },
+                onSearch = { active = false },
+                active = active,
+                onActiveChange = { active = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(text = "Search Location") },
+                leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
+                trailingIcon = {
+                    if (active) {
+                        Icon(
+                            modifier = Modifier.clickable {
+                                if (searchQuery.isNotEmpty()) searchQuery = "" else active = false
+                            },
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear"
+                        )
+                    }
+                }
+            ) {
+                if (searchQuery.isNotEmpty()) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(16.dp)
+                        )
+                    } else {
+                        LazyColumn {
+                            items(searchResults) { result ->
+                                Text(
+                                    text = "${result.name}, ${result.country}",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            latLong = LatLng(result.lat, result.lon)
+                                            searchQuery = "${result.name}, ${result.country}"
+                                            active = false
+                                        }
+                                        .padding(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            // Date Picker
+            Button(onClick = { showDatePicker(context, selectedDate) }) {
+                Text("Select Date: ${selectedDate.value}")
+            }
 
-        // Duration Picker
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Duration (hours): ")
-            Slider(
-                value = (duration / 3600000).toFloat(),
-                onValueChange = { duration = (it * 3600000).toLong() },
-                valueRange = 1f..24f,
-                steps = 23,
-                modifier = Modifier.weight(1f)
-            )
-            Text("${(duration / 3600000).toInt()}h")
-        }
+            // Time Picker
+            Button(onClick = { showTimePicker(context, selectedTime) }) {
+                Text("Select Time: ${selectedTime.value}")
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            // Alarm Type Selection
+            Column {
+                Text("Alarm Type:")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = alarmType.value == "Notification",
+                        onClick = { alarmType.value = "Notification" }
+                    )
+                    Text("Notification")
 
-        // Alert Type Picker
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Alert Type: ")
-            RadioButton(
-                selected = alertType == AlertType.NOTIFICATION,
-                onClick = { alertType = AlertType.NOTIFICATION }
-            )
-            Text("Notification")
-            Spacer(modifier = Modifier.width(16.dp))
-            RadioButton(
-                selected = alertType == AlertType.ALARM,
-                onClick = { alertType = AlertType.ALARM }
-            )
-            Text("Alarm")
-        }
+                    Spacer(modifier = Modifier.width(16.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+                    RadioButton(
+                        selected = alarmType.value == "Alarm",
+                        onClick = { alarmType.value = "Alarm" }
+                    )
+                    Text("Alarm Sound")
+                }
+            }
 
-        // Display Weather Alerts
-        LazyColumn {
-            items(alerts) { alert ->
-                WeatherAlertItem(alert, viewModel)
+            // Duration Slider
+            DurationSlider(duration)
+
+            // Set Alert Button
+            Button(
+                onClick = {
+                    if (latLong.latitude != 0.0 && latLong.longitude != 0.0) {
+                        val alert = WeatherAlert(
+                            duration = duration.value * 60 * 1000L,
+                            type = if (alarmType.value == "Notification") AlertType.NOTIFICATION else AlertType.ALARM,
+                            latitude = latLong.latitude,
+                            longitude = latLong.longitude,
+                            date = selectedDate.value,
+                            time = selectedTime.value
+                        )
+
+                        weatherAlertViewModel.addAlert(alert, context)
+                        AlertScheduler.scheduleAlert(context, alert.id, alert.duration)
+
+                        // Show Snackbar instead of Toast
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("Alert for ${alert.date} is set")
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Set Alert")
             }
         }
     }
 }
 
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun showDatePicker(context: Context, selectedDate: MutableState<LocalDate>) {
+    val calendar = Calendar.getInstance()
+    val datePicker = android.app.DatePickerDialog(
+        context,
+        { _, year, month, day ->
+            selectedDate.value = LocalDate.of(year, month + 1, day)
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+    datePicker.show()
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun showTimePicker(context: Context, selectedTime: MutableState<LocalTime>) {
+    val calendar = Calendar.getInstance()
+    val timePicker = TimePickerDialog(
+        context,
+        { _, hour, minute ->
+            selectedTime.value = LocalTime.of(hour, minute)
+        },
+        calendar.get(Calendar.HOUR_OF_DAY),
+        calendar.get(Calendar.MINUTE),
+        false
+    )
+    timePicker.show()
+}
+
 @Composable
-fun WeatherAlertItem(alert: WeatherAlert, viewModel: WeatherAlertViewModel) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text("Alert Type: ${alert.type.name}")
-            Text("Duration: ${alert.duration / 3600000} hours")
-            Button(
-                onClick = {
-                    viewModel.removeAlert(alert)
-                },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("Stop Alert")
-            }
-        }
+fun DurationSlider(duration: MutableState<Int>) {
+    Column {
+        Text(text = "Duration: ${duration.value} mins", fontSize = 16.sp)
+
+        Slider(
+            value = duration.value.toFloat(),
+            onValueChange = { duration.value = it.toInt() },
+            valueRange = 1f..60f,
+            steps = 58,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
