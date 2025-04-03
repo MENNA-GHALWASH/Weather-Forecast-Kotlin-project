@@ -19,5 +19,10 @@
     <string name="notify">إشعارات</string>
     <string name="favourites">المفضل</string>
     <string name="nofav">لا يوجد مفضل, أضف مفضل </string>
+    <string name="feels">كأنه</string>
+    <string name="date">اختر تاريخا</string>
+    <string name="search">ابحث عن المدن</string>
+    <string name="time">اختر الوقت</string>
+    <string name="alarm">نوع المنبه</string>
 
 </resources>

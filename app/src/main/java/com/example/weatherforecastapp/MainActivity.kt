@@ -94,16 +94,15 @@ class MainActivity : ComponentActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d("PermissionFix", "Permission granted! Fetching location...")
 
-                // 🌟 Add a small delay before checking permission again
                 Handler(Looper.getMainLooper()).postDelayed({
                     if (viewmodel.isPermissionEnabled(this)) {
                         viewmodel.getLocationAndPermission(this)
                     } else {
                         Log.e("PermissionFix", "Permission check failed even after grant!")
                     }
-                }, 500)  // Give Android 500ms to update the permission state
+                }, 1500)
             } else {
-                Toast.makeText(this, "Location permission denied!", Toast.LENGTH_SHORT).show()
+               // Toast.makeText(this, "Location permission denied!", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -196,12 +195,12 @@ fun MainScreen(
                             locVM.getCurrentWeather(loc.latitude, it.longitude, apikey)
                         } //this variable location needs to be stored in shared preferences,
 
-                        goToLocationOrWeather(true, weather,cityName)
+                        goToLocationOrWeather(true, weather,/*cityName*/"your location")
                         Log.i("getWeather", "MainScreen: x = $weather")
                     } else {
                         viewModel.getLocationAndPermission(activity)
                         Toast.makeText(application, "Location retrieved is null", Toast.LENGTH_SHORT).show()
-                        goToLocationOrWeather(false, weather,cityName)
+                        goToLocationOrWeather(false, weather,/*cityName*/"your location")
                     }
                 }},
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDDB130))

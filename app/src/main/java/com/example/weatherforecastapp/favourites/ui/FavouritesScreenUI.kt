@@ -11,6 +11,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.res.stringResource
+import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.favourites.model.FavClass
 import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
 
@@ -18,7 +20,7 @@ import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
 fun FavScreenUI(
     goToLocationsForFavourites: (Boolean) -> Unit,
     viewModel: FavouritesViewModel,
-    goToWeather: (Double, Double) -> Unit
+    goToWeather: (Double, Double,String) -> Unit
 ) {
     val favourites by viewModel.allFavourites.collectAsState(initial = emptyList())
 
@@ -44,7 +46,8 @@ fun FavScreenUI(
         ) {
             if (favourites.isEmpty()) {
                 Text(
-                    text = "No favourites yet, add some?",
+                  //  text = "No favourites yet, add some?",
+                    text = stringResource(R.string.nofav),
                     modifier = Modifier.padding(16.dp)
                 )
             } else {
@@ -60,14 +63,15 @@ fun FavScreenUI(
     }
 }
 
+
 @Composable
-fun FavItemCard(fav: FavClass,goToWeather:(Double,Double)->Unit, viewModel: FavouritesViewModel) {
+fun FavItemCard(fav: FavClass,goToWeather:(Double,Double,String)->Unit, viewModel: FavouritesViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                goToWeather(fav.lat,fav.lon)
+                goToWeather(fav.lat,fav.lon,fav.city)
             },
         elevation = CardDefaults.elevatedCardElevation(4.dp) //
     ) {
@@ -85,6 +89,7 @@ fun FavItemCard(fav: FavClass,goToWeather:(Double,Double)->Unit, viewModel: Favo
                     text = fav.city,
                     style = MaterialTheme.typography.titleLarge
                 )
+
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Lat: ${fav.lat}, Lon: ${fav.lon}")
             }

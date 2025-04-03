@@ -131,8 +131,8 @@ dependencies {
     // JUnit
     androidTestImplementation("junit:junit:4.13.2")
 
-    // MockK (if needed)
     androidTestImplementation("io.mockk:mockk-android:1.13.7")
 
+    testImplementation ("app.cash.turbine:turbine:1.0.0")
 
 }

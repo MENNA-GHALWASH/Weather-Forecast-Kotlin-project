@@ -129,12 +129,12 @@ fun WeatherAlertsUI(
 
             // Date Picker
             Button(onClick = { showDatePicker(context, selectedDate) }) {
-                Text("Select Date: ${selectedDate.value}")
+                Text("${stringResource(R.string.date)}: ${selectedDate.value}")
             }
 
             // Time Picker
             Button(onClick = { showTimePicker(context, selectedTime) }) {
-                Text("Select Time: ${selectedTime.value}")
+                Text("${stringResource(R.string.time)}: ${selectedTime.value}")
             }
 
             // Alarm Type Selection
@@ -145,7 +145,7 @@ fun WeatherAlertsUI(
                         selected = alarmType.value == "Notification",
                         onClick = { alarmType.value = "Notification" }
                     )
-                    Text("Notification")
+                    Text(stringResource(R.string.notify))
 
                     Spacer(modifier = Modifier.width(16.dp))
 

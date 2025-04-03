@@ -19,4 +19,9 @@
     <string name="notify">Notify</string>
     <string name="favourites">Favourites</string>
     <string name="nofav">no favourites yet? add some</string>
+    <string name="feels">Feels like</string>
+    <string name="date">select date</string>
+    <string name="search">Search cities</string>
+    <string name="time">choose the time</string>
+    <string name="alarm">Alarm Type:</string>
 </resources>

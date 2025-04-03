@@ -148,21 +148,14 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                        // val gson = Gson()
 
                         if(!flag){ //not from fav screen
-                           // navController.navigate(ScreenRoute.WeatherScreen(gson.toJson(current),/*String country name*/city))
                             navController.navigate(ScreenRoute.WeatherScreen(lat,lon,city))
                         }
                         else{
-                            //navController.popBackStack()
 
-                            //pass the weather response and the city to next screen
-                            //if (current != null) { // current was a weather response
                                 favviewModel.addToFavourites(FavClass(lat,lon, city))
                                 Log.i("Fav", "Added to favourites: ${FavClass(lat,lon, city)}")
 
-                            //}
-
-
-                            navController.navigate(ScreenRoute.FavouritesScreen(city))
+                            navController.navigate(ScreenRoute.FavouritesScreen(null,city))
                             //pop the back stack and send the data back to favourites
                             //pass data to favourites or simply observe using flow
                             //navController.navigate(ScreenRoute.FavouritesScreen) //more to do here
@@ -195,8 +188,8 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                         navController.navigate(ScreenRoute.LocationScreen(flag))
                     },
                     viewModel = viewModel,
-                    goToWeather = {lat,lon ->
-                        navController.navigate(ScreenRoute.WeatherScreen(lat, lon, city)) // i am not sure
+                    goToWeather = {lat,lon,name ->
+                        navController.navigate(ScreenRoute.WeatherScreen(lat, lon, name)) // i am not sure
                     }
                 )
             }

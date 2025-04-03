@@ -59,7 +59,6 @@ fun WeatherUI(lat:Double, lon:Double, city:String, viewModel: WeatherViewModel) 
             .fillMaxWidth()
     ) {
         if (currentWeather!=null) {
-            // Location header
             Text(
                 text = city,
                 style = MaterialTheme.typography.titleLarge,
@@ -70,7 +69,6 @@ fun WeatherUI(lat:Double, lon:Double, city:String, viewModel: WeatherViewModel) 
                 textAlign = TextAlign.Center
             )
 
-            // Current temperature - safely handle null values
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 16.dp)
