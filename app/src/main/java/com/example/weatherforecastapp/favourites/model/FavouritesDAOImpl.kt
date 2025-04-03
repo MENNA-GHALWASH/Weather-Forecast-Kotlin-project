@@ -21,7 +21,7 @@ abstract class FavouritesDAOImpl : RoomDatabase() {
                     context.applicationContext,
                     FavouritesDAOImpl::class.java,
                     "Favourites"
-                )    .fallbackToDestructiveMigration() // 💥 WARNING: This will DELETE existing data!
+                )    .fallbackToDestructiveMigration()
                     .build()
                 instance = INSTANCE
                 INSTANCE

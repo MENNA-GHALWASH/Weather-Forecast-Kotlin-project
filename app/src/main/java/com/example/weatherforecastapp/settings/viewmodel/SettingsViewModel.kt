@@ -1,11 +1,6 @@
-package com.example.weatherforecastapp.settings.viewmodel
-
+import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.example.weatherforecastapp.settings.model.Language
-import com.example.weatherforecastapp.settings.model.LocationOption
-import com.example.weatherforecastapp.settings.model.SettingsState
-import com.example.weatherforecastapp.settings.model.TemperatureUnit
-import com.example.weatherforecastapp.settings.model.WindSpeedUnit
+import com.example.weatherforecastapp.settings.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -14,19 +9,24 @@ class SettingsViewModel : ViewModel() {
     private val _settingsState = MutableStateFlow(SettingsState())
     val settingsState: StateFlow<SettingsState> = _settingsState
 
-    fun updateLocationOption(option: LocationOption) {
+    fun updateLocationOption(context: Context, option: LocationOption) {
         _settingsState.value = _settingsState.value.copy(locationOption = option)
+        SettingsManager.setLocationOption(context, option)
     }
 
-    fun updateTemperatureUnit(unit: TemperatureUnit) {
+    fun updateTemperatureUnit(context: Context, unit: TemperatureUnit) {
         _settingsState.value = _settingsState.value.copy(temperatureUnit = unit)
+        SettingsManager.setTemperatureUnit(context, unit)
     }
 
-    fun updateWindSpeedUnit(unit: WindSpeedUnit) {
+    fun updateWindSpeedUnit(context: Context, unit: WindSpeedUnit) {
         _settingsState.value = _settingsState.value.copy(windSpeedUnit = unit)
+        SettingsManager.setWindSpeedUnit(context, unit)
     }
 
-    fun updateLanguage(language: Language) {
+    fun updateLanguage(context: Context, language: Language) {
         _settingsState.value = _settingsState.value.copy(language = language)
+        SettingsManager.setLanguage(context, language)
+        SettingsManager.setLocale(context, language) // Apply the language change
     }
 }

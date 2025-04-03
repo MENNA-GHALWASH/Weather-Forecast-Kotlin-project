@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import com.example.weatherforecastapp.favourites.model.FavClass
 import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
 
@@ -51,7 +52,7 @@ fun FavScreenUI(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(favourites) { favItem ->
-                        FavItemCard(favItem,goToWeather)
+                        FavItemCard(favItem,goToWeather,viewModel)
                     }
                 }
             }
@@ -60,7 +61,7 @@ fun FavScreenUI(
 }
 
 @Composable
-fun FavItemCard(fav: FavClass,goToWeather:(Double,Double)->Unit) {
+fun FavItemCard(fav: FavClass,goToWeather:(Double,Double)->Unit, viewModel: FavouritesViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -70,15 +71,36 @@ fun FavItemCard(fav: FavClass,goToWeather:(Double,Double)->Unit) {
             },
         elevation = CardDefaults.elevatedCardElevation(4.dp) //
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = fav.city,
-                style = MaterialTheme.typography.titleLarge //
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Lat: ${fav.lat}, Lon: ${fav.lon}")
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = fav.city,
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Lat: ${fav.lat}, Lon: ${fav.lon}")
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            IconButton(
+                onClick = { viewModel.deleteFavourite(fav) },
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
         }
     }
 }

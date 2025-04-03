@@ -15,7 +15,7 @@ interface WeatherDao {
     suspend fun insertWeatherResponse(weatherResponse: WeatherResponse)
 
     @Query("SELECT * FROM weather_response WHERE lat = :lat AND lon = :lon")
-    suspend fun getWeatherResponse(lat: Double, lon: Double): WeatherResponse?
+    suspend fun getWeatherResponse(lat: Double, lon: Double): WeatherResponse
 
 //    @Insert(onConflict = OnConflictStrategy.REPLACE)
 //    suspend fun insertHourlyForecast(hourlyForecast: List<HourlyForecast>)

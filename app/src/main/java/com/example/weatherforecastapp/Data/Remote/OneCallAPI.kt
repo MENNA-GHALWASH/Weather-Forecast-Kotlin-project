@@ -14,7 +14,8 @@ interface OneCallAPI {
             @Query("lon") lon: Double,
             @Query("exclude") exclude: String,
             @Query("appid") apiKey: String,
-            @Query("units") units: String = "metric"
+            @Query("units") units: String = "metric",
+            @Query("lang") lang: String = "en"
         ): WeatherResponse
 
         @GET("data/3.0/onecall")

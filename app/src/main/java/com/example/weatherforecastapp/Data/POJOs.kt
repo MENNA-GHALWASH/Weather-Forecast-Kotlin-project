@@ -12,6 +12,7 @@ data class WeatherResponse(
     val timezone: String,
     @TypeConverters(Converters::class) val hourly: List<HourlyForecast>,
     @TypeConverters(Converters::class) val daily: List<DailyForecast>
+
 )
 
 @Entity(tableName = "hourly_forecast")

@@ -19,6 +19,7 @@ import androidx.navigation.toRoute
 import com.example.weatherforecastapp.MainScreen
 import com.example.weatherforecastapp.favourites.model.FavClass
 import com.example.weatherforecastapp.favourites.model.FavouritesDAOImpl
+import com.example.weatherforecastapp.favourites.model.FavouritesLocalDataSource
 import com.example.weatherforecastapp.favourites.model.FavouritesRepo
 import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModel
 import com.example.weatherforecastapp.favourites.viewmodel.FavouritesViewModelFactory
@@ -39,7 +40,6 @@ import com.example.weatherforecastapp.selecting_location.get_location_with_map.u
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModel
 import com.example.weatherforecastapp.selecting_location.get_location_with_map.viewmodel.LocationsViewModelFactory
 import com.example.weatherforecastapp.settings.ui.SettingsUI
-import com.example.weatherforecastapp.settings.viewmodel.SettingsViewModel
 import com.example.weatherforecastapp.start_screen.model.StartScreenRepo
 import com.example.weatherforecastapp.start_screen.viewmodel.StartScreeViewModel
 import com.example.weatherforecastapp.start_screen.viewmodel.StartScreenViewModelFactory
@@ -76,7 +76,7 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                 )
 
                 var dao = WeatherDatabase.getDatabase(context).weatherDao()
-                val locrepo = remember { WeatherRepo(dao) }
+                val locrepo = remember { WeatherRepo(dao,context) }
                 val locviewModel: WeatherViewModel = viewModel(
                     factory = WeatherViewModelFactory(locrepo)
                 )
@@ -91,7 +91,6 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                             }
                             else{
                                 navController.navigate(ScreenRoute.WeatherScreen(weatherResp.lat,weatherResp.lon,cityname))
-                            //should pass the city retrieved from fetch cities
                             }
                         }
                         else
@@ -107,7 +106,7 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
 
                 var dao = WeatherDatabase.getDatabase(context).weatherDao()
 
-                val repo = remember { WeatherRepo(dao) }
+                val repo = remember { WeatherRepo(dao,context) }
                 val viewModel: WeatherViewModel = viewModel(
                     factory = WeatherViewModelFactory(repo)
                 )
@@ -127,7 +126,9 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                 )
 
                 val dao = FavouritesDAOImpl.getInstance(application)
-                val favrepo = remember { FavouritesRepo(dao.getFavouritesDAO()) }
+                val lds =  FavouritesLocalDataSource(dao.getFavouritesDAO())
+
+                val favrepo = remember { FavouritesRepo(lds) }
                 val favviewModel: FavouritesViewModel = viewModel(
                     factory = FavouritesViewModelFactory(favrepo)
                 )
@@ -135,7 +136,7 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
 
                 currentScreenRoute.value = ScreenRoute.LocationScreen()
 
-                val Favrepo = remember { FavouritesRepo(dao.getFavouritesDAO()) }
+                val Favrepo = remember { FavouritesRepo(lds) }
                 val Favviewmodel: FavouritesViewModel = viewModel(
                     factory = FavouritesViewModelFactory(Favrepo)
                 )
@@ -177,7 +178,9 @@ fun setNavHost(application: Application,context: Context,activity:Activity) {
                 val weather = fromfav.weather?:null
 
                 val dao = FavouritesDAOImpl.getInstance(application)
-                val repo = remember { FavouritesRepo(dao.getFavouritesDAO()) }
+                val lds =  FavouritesLocalDataSource(dao.getFavouritesDAO())
+
+                val repo = remember { FavouritesRepo(lds) }
                 val viewModel: FavouritesViewModel = viewModel(
                     factory = FavouritesViewModelFactory(repo)
                 )

@@ -13,6 +13,13 @@ android {
     namespace = "com.example.weatherforecastapp"
     compileSdk = 35
 
+    packagingOptions {
+        exclude("META-INF/LICENSE.md")
+        exclude("META-INF/LICENSE-notice.md")
+        exclude("META-INF/NOTICE.md")
+        exclude("META-INF/*.kotlin_module")
+    }
+
     defaultConfig {
         applicationId = "com.example.weatherforecastapp"
         minSdk = 24
@@ -57,7 +64,11 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.play.services.location)
     implementation(libs.androidx.storage)
+    implementation(libs.androidx.runner)
+    implementation(libs.androidx.junit.ktx)
+    implementation(libs.core.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.core.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -96,7 +107,32 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     ksp ("androidx.room:room-compiler:2.6.1")
 
+    //for notifications
     implementation ("androidx.work:work-runtime-ktx:2.8.1")
+
+    testImplementation ("junit:junit:4.13.2")
+    testImplementation ("org.mockito:mockito-core:4.6.1")
+    testImplementation ("org.mockito:mockito-inline:4.6.1")
+
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
+    testImplementation ("androidx.arch.core:core-testing:2.1.0")
+
+    androidTestImplementation("androidx.room:room-testing:2.6.1")
+    androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
+
+    // Coroutines Testing
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
+
+    // AndroidX Test
+    androidTestImplementation("androidx.test:core-ktx:1.5.0")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+
+    // JUnit
+    androidTestImplementation("junit:junit:4.13.2")
+
+    // MockK (if needed)
+    androidTestImplementation("io.mockk:mockk-android:1.13.7")
 
 
 }

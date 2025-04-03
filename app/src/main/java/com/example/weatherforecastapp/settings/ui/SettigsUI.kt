@@ -1,19 +1,22 @@
 package com.example.weatherforecastapp.settings.ui
 
 
+import SettingsViewModel
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.weatherforecastapp.settings.model.Language
 import com.example.weatherforecastapp.settings.model.LocationOption
 import com.example.weatherforecastapp.settings.model.TemperatureUnit
 import com.example.weatherforecastapp.settings.model.WindSpeedUnit
-import com.example.weatherforecastapp.settings.viewmodel.SettingsViewModel
 
 @Composable
 fun SettingsUI(viewModel: SettingsViewModel) {
+    val context = LocalContext.current
     val settingsState by viewModel.settingsState.collectAsState()
 
     Column(
@@ -24,25 +27,26 @@ fun SettingsUI(viewModel: SettingsViewModel) {
     ) {
         LocationOptionPicker(
             selectedOption = settingsState.locationOption,
-            onOptionSelected = viewModel::updateLocationOption
+            onOptionSelected = { viewModel.updateLocationOption(context, it) }
         )
 
         TemperatureUnitPicker(
             selectedUnit = settingsState.temperatureUnit,
-            onUnitSelected = viewModel::updateTemperatureUnit
+            onUnitSelected = { viewModel.updateTemperatureUnit(context, it) }
         )
 
         WindSpeedUnitPicker(
             selectedUnit = settingsState.windSpeedUnit,
-            onUnitSelected = viewModel::updateWindSpeedUnit
+            onUnitSelected = { viewModel.updateWindSpeedUnit(context, it) }
         )
 
         LanguagePicker(
             selectedLanguage = settingsState.language,
-            onLanguageSelected = viewModel::updateLanguage
+            onLanguageSelected = { viewModel.updateLanguage(context, it) }
         )
     }
 }
+
 
 @Composable
 fun LocationOptionPicker(selectedOption: LocationOption, onOptionSelected: (LocationOption) -> Unit) {

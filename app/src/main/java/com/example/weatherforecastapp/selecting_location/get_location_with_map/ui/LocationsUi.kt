@@ -50,7 +50,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun LocationsUI(
     viewModel: LocationsViewModel,
-    goToWeather: (/*WeatherResponse?*/lat:Double,lon:Double,String) -> Unit ,
+    goToWeather: (/*WeatherResponse?*/lat:Double,lon:Double,String) -> Unit,
     favouriteViewModel: FavouritesViewModel,
 //    fromFav: Boolean
 

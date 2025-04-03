@@ -86,7 +86,7 @@ class AlertReceiver : BroadcastReceiver() {
                     val apiKey = getApi(it)
 
                     val dao = WeatherDatabase.getDatabase(it).weatherDao()
-                    val repo = WeatherRepo(dao)
+                    val repo = WeatherRepo(dao,context)
 
                     val weatherResponse = repo.getCurrentWeather(latitude, longitude, apiKey)
 

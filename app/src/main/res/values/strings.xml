@@ -1,3 +1,22 @@
 <resources>
-    <string name="app_name">Weather forecast app</string>
+    <string name="app_name">Weather Forecast</string>
+    <string name="location_option">Location Option</string>
+    <string name="location_option_gps">GPS</string>
+    <string name="location_option_map">Map</string>
+    <string name="temperature_unit">Temperature Unit</string>
+    <string name="celsius">Celsius</string>
+    <string name="fahrenheit">Fahrenheit</string>
+    <string name="kelvin">Kelvin</string>
+    <string name="wind_speed_unit">Wind Speed Unit</string>
+    <string name="meter_per_second">Meter/sec</string>
+    <string name="miles_per_hour">Miles/hour</string>
+    <string name="language">Language</string>
+    <string name="english">English</string>
+    <string name="arabic">Arabic</string>
+    <string name="home">Home</string>
+    <string name="settings">Settings</string>
+    <string name="location">Location</string>
+    <string name="notify">Notify</string>
+    <string name="favourites">Favourites</string>
+    <string name="nofav">no favourites yet? add some</string>
 </resources>

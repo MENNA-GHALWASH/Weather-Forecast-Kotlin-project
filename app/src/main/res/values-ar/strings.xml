@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">توقعات الطقس</string>
+    <string name="location_option">اختيار الموقع</string>
+    <string name="location_option_gps">نظام تحديد المواقع</string>
+    <string name="location_option_map">الخريطة</string>
+    <string name="temperature_unit">وحدة الحرارة</string>
+    <string name="celsius">سيلسيوس</string>
+    <string name="fahrenheit">فهرنهايت</string>
+    <string name="kelvin">كلفن</string>
+    <string name="wind_speed_unit">وحدة سرعة الرياح</string>
+    <string name="meter_per_second">متر/ثانية</string>
+    <string name="miles_per_hour">أميال/ساعة</string>
+    <string name="language">اللغة</string>
+    <string name="english">الإنجليزية</string>
+    <string name="arabic">العربية</string>
+    <string name="home">الطقس</string>
+    <string name="settings">إعدادات</string>
+    <string name="location">إحداثيات</string>
+    <string name="notify">إشعارات</string>
+    <string name="favourites">المفضل</string>
+    <string name="nofav">لا يوجد مفضل, أضف مفضل </string>
+
+</resources>
